@@ -1,0 +1,37 @@
+import { prisma } from '../prisma'
+
+export type AdmissionStatus = 'open' | 'upcoming' | 'closed'
+
+export type AdmissionInfo = {
+  intake: string
+  opensOn: string
+  closesOn: string
+  fee: number
+  status: AdmissionStatus
+}
+
+// Admission dates are calendar days in Tanzania time (UTC+3).
+const TZ = '+03:00'
+
+export async function getAdmission(): Promise<AdmissionInfo> {
+  const rows = await prisma.setting.findMany({
+    where: { key: { startsWith: 'admission.' } },
+  })
+  const map = Object.fromEntries(rows.map((r) => [r.key, r.value]))
+
+  const intake = map['admission.intake'] ?? ''
+  const opensOn = map['admission.opensOn'] ?? ''
+  const closesOn = map['admission.closesOn'] ?? ''
+  const fee = Number(map['admission.fee'] ?? 0)
+
+  let status: AdmissionStatus = 'closed'
+  if (opensOn && closesOn) {
+    const now = new Date()
+    const opens = new Date(`${opensOn}T00:00:00${TZ}`)
+    const closes = new Date(`${closesOn}T23:59:59${TZ}`)
+    if (now < opens) status = 'upcoming'
+    else if (now <= closes) status = 'open'
+  }
+
+  return { intake, opensOn, closesOn, fee, status }
+}

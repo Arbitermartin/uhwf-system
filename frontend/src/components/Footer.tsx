@@ -29,7 +29,7 @@ const services = [
 
 const support = [
     { label: 'Help Center', to: '/help' },
-    { label: 'ICT Services', to: '/ict' },
+    { label: 'ICT Services', to: '/contact' },
     { label: 'Contact Us', to: '/contact' },
 ]
 

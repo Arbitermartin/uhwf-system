@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
         ],
     },
     { label: 'Our Team', to: '/team' },
+    { label: 'Admission', to: '/admission' },
     { label: 'Contact Us', to: '/contact' },
     {
         label: 'Resources',

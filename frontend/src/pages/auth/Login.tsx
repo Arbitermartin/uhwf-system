@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 import { FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa'
 import logo from '../../assets/uhwf-logo.webp'
 import heroImage from '../../assets/conservation.webp'
+import { getErrorMessage } from '../../services/api'
+import { roleHome } from '../../services/roleHome'
 
 type LoginForm = {
     identifier: string
@@ -18,6 +21,7 @@ const inputBase =
 
 const Login = () => {
     const navigate = useNavigate()
+    const { login } = useAuth()
     const [form, setForm] = useState<LoginForm>({
         identifier: '',
         password: '',
@@ -35,30 +39,23 @@ const Login = () => {
             setErrors((prev) => ({ ...prev, [name]: undefined }))
         }
     }
-
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
 
         const found: LoginErrors = {}
-        if (form.identifier.trim().length < 3) {
-            found.identifier = 'Enter your email or username.'
-        }
-        if (form.password.length < 6) {
-            found.password = 'Password must be at least 6 characters.'
-        }
+        if (form.identifier.trim().length < 3) found.identifier = 'Enter your email.'
+        if (form.password.length < 6) found.password = 'Password must be at least 6 characters.'
         setErrors(found)
         if (Object.keys(found).length > 0) return
 
         setLoading(true)
         setServerError('')
         try {
-            // TODO: connect to backend, e.g.
-            // const { data } = await axios.post('/api/auth/login', form)
-            // save token, then redirect by role (student, lecturer, employee, ict, admin)
-            await new Promise((resolve) => setTimeout(resolve, 900))
-            navigate('/')
-        } catch {
-            setServerError('Invalid credentials. Please try again.')
+            const user = await login(form.identifier.trim(), form.password)
+            // A temporary password must be replaced before anything else
+            navigate(user.mustChangePassword ? '/change-password' : roleHome[user.role], { replace: true })
+        } catch (err) {
+            setServerError(getErrorMessage(err, 'Could not sign in. Please try again.'))
         } finally {
             setLoading(false)
         }

@@ -1,13 +1,753 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// UHWF Tanzania system: database schema (PostgreSQL)
+// Tables use snake_case plural names. Fields use camelCase.
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================ Enums ============================
+
+enum Role {
+  admin
+  lecturer
+  student
+  employee
+  ict
+}
+
+enum UserStatus {
+  pending
+  active
+  suspended
+}
+
+enum Gender {
+  female
+  male
+}
+
+enum ApplicationStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+enum DocType {
+  photo
+  id
+  cert
+  birth
+}
+
+enum EnrollmentStatus {
+  active
+  dropped
+  completed
+}
+
+enum AttendanceStatus {
+  present
+  absent
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  done
+}
+
+enum LeaveType {
+  annual
+  sick
+  other
+}
+
+enum LeaveStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum ConversationType {
+  direct
+  course
+}
+
+enum Audience {
+  all
+  role
+  course
+}
+
+enum TicketStatus {
+  open
+  resolved
+}
+
+enum LogLevel {
+  error
+  warning
+  info
+}
+
+enum BackupKind {
+  automatic
+  manual
+}
+
+enum JobType {
+  full_time
+  part_time
+  contract
+  internship
+}
+
+enum JobStatus {
+  open
+  closed
+}
+
+enum JobApplicationStatus {
+  received
+  reviewing
+  shortlisted
+  rejected
+  hired
+}
+
+// ============================ People ============================
+
+model User {
+  id           Int        @id @default(autoincrement())
+  fullName     String
+  email        String     @unique
+  phone        String?
+  gender       Gender?
+  passwordHash String
+  role         Role
+  status       UserStatus @default(active)
+  photoUrl     String?
+  lastLoginAt  DateTime?
+    // true for new accounts and after an admin reset: the user must choose their own password
+  mustChangePassword Boolean   @default(false)
+  passwordChangedAt  DateTime?
+  // raising this number signs the user out everywhere (old login cookies stop working)
+  tokenVersion       Int       @default(0)
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  studentProfile  StudentProfile?
+  lecturerProfile LecturerProfile?
+  employeeProfile EmployeeProfile?
+  supervisees     EmployeeProfile[] @relation("EmployeeSupervisor")
+  teamMember      TeamMember?
+
+  application          Application?  @relation("ApplicationOwner")
+  reviewedApplications Application[] @relation("ApplicationReviewer")
+
+  markedAttendance AttendanceRecord[]
+  workDays         WorkDay[]
+  tasksAssigned    Task[]             @relation("TaskAssignee")
+  tasksCreated     Task[]             @relation("TaskCreator")
+  leaveRequests    LeaveRequest[]     @relation("LeaveRequester")
+  leaveDecisions   LeaveRequest[]     @relation("LeaveDecider")
+
+  conversationsCreated Conversation[]
+  participations       ConversationParticipant[]
+  messages             Message[]
+  announcements        Announcement[]
+  notifications        Notification[]
+  ticketsOpened        SupportTicket[]           @relation("TicketRequester")
+  ticketsHandled       SupportTicket[]           @relation("TicketAssignee")
+  ticketComments       TicketComment[]
+  attachments          Attachment[]
+
+  newsPosts    NewsPost[]
+  events       Event[]
+  videos       Video[]
+  jobPositions JobPosition[]
+  activityLogs ActivityLog[]
+  backups      Backup[]
+
+  @@map("users")
+}
+
+model Department {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+
+  lecturers LecturerProfile[]
+  employees EmployeeProfile[]
+  courses   Course[]
+
+  @@map("departments")
+}
+
+// Created when an application is approved (the registration number is assigned then).
+model StudentProfile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  regNumber   String   @unique
+  programme   String?
+  yearOfStudy String?
+  admittedAt  DateTime @default(now())
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+  attendance  AttendanceRecord[]
+  submissions Submission[]
+
+  @@map("student_profiles")
+}
+
+model LecturerProfile {
+  id            Int     @id @default(autoincrement())
+  userId        Int     @unique
+  staffId       String  @unique
+  departmentId  Int
+  qualification String?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id])
+  courses    Course[]
+
+  @@index([departmentId])
+  @@map("lecturer_profiles")
+}
+
+model EmployeeProfile {
+  id           Int    @id @default(autoincrement())
+  userId       Int    @unique
+  staffId      String @unique
+  departmentId Int
+  position     String
+  supervisorId Int?
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id])
+  supervisor User?      @relation("EmployeeSupervisor", fields: [supervisorId], references: [id], onDelete: SetNull)
+
+  @@index([departmentId])
+  @@map("employee_profiles")
+}
+
+// ============================ Courses ============================
+
+model Course {
+  id           Int     @id @default(autoincrement())
+  code         String  @unique
+  title        String
+  description  String?
+  credits      Int
+  departmentId Int
+  lecturerId   Int?
+  isActive     Boolean @default(true)
+
+  department         Department          @relation(fields: [departmentId], references: [id])
+  lecturer           LecturerProfile?    @relation(fields: [lecturerId], references: [id], onDelete: SetNull)
+  enrollments        Enrollment[]
+  applicationCourses ApplicationCourse[]
+  assignments        Assignment[]
+  attendance         AttendanceRecord[]
+  conversations      Conversation[]
+  announcements      Announcement[]
+
+  @@index([departmentId])
+  @@index([lecturerId])
+  @@map("courses")
+}
+
+model Enrollment {
+  id         Int              @id @default(autoincrement())
+  studentId  Int
+  courseId   Int
+  status     EnrollmentStatus @default(active)
+  enrolledAt DateTime         @default(now())
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@index([courseId])
+  @@map("enrollments")
+}
+
+// ============================ Admission ============================
+
+model Application {
+  id           Int               @id @default(autoincrement())
+  userId       Int               @unique
+  intake       String
+  status       ApplicationStatus @default(draft)
+  dob          DateTime?         @db.Date
+  nationality  String?
+  region       String?
+  kinName      String?
+  kinPhone     String?
+  submittedAt  DateTime?
+  reviewedById Int?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  user      User                  @relation("ApplicationOwner", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer  User?                 @relation("ApplicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  payments  Payment[]
+  courses   ApplicationCourse[]
+  documents ApplicationDocument[]
+
+  @@index([status])
+  @@map("applications")
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  applicationId Int
+  amount        Int // in TZS
+  method        String
+  status        PaymentStatus @default(pending)
+  reference     String?       @unique
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("payments")
+}
+
+model ApplicationCourse {
+  id            Int @id @default(autoincrement())
+  applicationId Int
+  courseId      Int
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  course      Course      @relation(fields: [courseId], references: [id])
+
+  @@unique([applicationId, courseId])
+  @@map("application_courses")
+}
+
+model ApplicationDocument {
+  id            Int      @id @default(autoincrement())
+  applicationId Int
+  type          DocType
+  fileName      String
+  fileUrl       String
+  uploadedAt    DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, type])
+  @@map("application_documents")
+}
+
+// ============================ Teaching ============================
+
+model AttendanceRecord {
+  id         Int              @id @default(autoincrement())
+  courseId   Int
+  studentId  Int
+  date       DateTime         @db.Date
+  status     AttendanceStatus
+  markedById Int
+
+  course   Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student  StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  markedBy User           @relation(fields: [markedById], references: [id])
+
+  @@unique([courseId, studentId, date])
+  @@index([courseId, date])
+  @@map("attendance_records")
+}
+
+model Assignment {
+  id          Int      @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  dueDate     DateTime
+  maxScore    Int      @default(20)
+  createdAt   DateTime @default(now())
+
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@index([courseId])
+  @@map("assignments")
+}
+
+model Submission {
+  id           Int       @id @default(autoincrement())
+  assignmentId Int
+  studentId    Int
+  fileUrl      String?
+  submittedAt  DateTime  @default(now())
+  score        Float?
+  gradedAt     DateTime?
+
+  assignment Assignment     @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId])
+  @@map("submissions")
+}
+
+// ============================ Staff work ============================
+
+model WorkDay {
+  id       Int       @id @default(autoincrement())
+  userId   Int
+  date     DateTime  @db.Date
+  clockIn  DateTime
+  clockOut DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("work_days")
+}
+
+model Task {
+  id           Int        @id @default(autoincrement())
+  title        String
+  priority     Priority   @default(medium)
+  dueDate      DateTime   @db.Date
+  status       TaskStatus @default(todo)
+  assignedToId Int
+  assignedById Int
+  createdAt    DateTime   @default(now())
+
+  assignedTo User @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: Cascade)
+  assignedBy User @relation("TaskCreator", fields: [assignedById], references: [id])
+
+  @@index([assignedToId, status])
+  @@map("tasks")
+}
+
+model LeaveRequest {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  type        LeaveType
+  startDate   DateTime    @db.Date
+  endDate     DateTime    @db.Date
+  days        Int
+  reason      String
+  status      LeaveStatus @default(pending)
+  decidedById Int?
+  decidedAt   DateTime?
+  createdAt   DateTime    @default(now())
+
+  user      User  @relation("LeaveRequester", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy User? @relation("LeaveDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@map("leave_requests")
+}
+
+// ============================ Communication ============================
+
+model Conversation {
+  id          Int              @id @default(autoincrement())
+  type        ConversationType
+  courseId    Int?
+  createdById Int
+  createdAt   DateTime         @default(now())
+
+  course       Course?                   @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  createdBy    User                      @relation(fields: [createdById], references: [id])
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             Int       @id @default(autoincrement())
+  conversationId Int
+  userId         Int
+  lastReadAt     DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  body           String
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+  attachments  Attachment[]
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Announcement {
+  id         Int      @id @default(autoincrement())
+  authorId   Int
+  title      String
+  body       String
+  audience   Audience
+  targetRole Role?
+  courseId   Int?
+  pinned     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  author User    @relation(fields: [authorId], references: [id])
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([audience, createdAt])
+  @@map("announcements")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  body      String?
+  linkUrl   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model SupportTicket {
+  id           Int          @id @default(autoincrement())
+  requesterId  Int
+  assignedToId Int?
+  subject      String
+  category     String       @default("general")
+  priority     Priority     @default(medium)
+  status       TicketStatus @default(open)
+  createdAt    DateTime     @default(now())
+  resolvedAt   DateTime?
+
+  requester  User            @relation("TicketRequester", fields: [requesterId], references: [id])
+  assignedTo User?           @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  comments   TicketComment[]
+
+  @@index([status, priority])
+  @@map("support_tickets")
+}
+
+model TicketComment {
+  id         Int      @id @default(autoincrement())
+  ticketId   Int
+  authorId   Int
+  body       String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author      User          @relation(fields: [authorId], references: [id])
+  attachments Attachment[]
+
+  @@index([ticketId])
+  @@map("ticket_comments")
+}
+
+model Attachment {
+  id              Int      @id @default(autoincrement())
+  uploadedById    Int
+  messageId       Int?
+  ticketCommentId Int?
+  fileName        String
+  fileUrl         String
+  fileSize        Int
+  createdAt       DateTime @default(now())
+
+  uploadedBy    User           @relation(fields: [uploadedById], references: [id])
+  message       Message?       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  ticketComment TicketComment? @relation(fields: [ticketCommentId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+// ============================ Website content ============================
+
+model NewsPost {
+  id          Int       @id @default(autoincrement())
+  authorId    Int
+  title       String
+  content     String
+  imageUrl    String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([publishedAt])
+  @@map("news_posts")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  createdById Int
+  title       String
+  location    String
+  description String?
+  eventDate   DateTime
+  createdAt   DateTime @default(now())
+
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  @@index([eventDate])
+  @@map("events")
+}
+
+model Video {
+  id           Int      @id @default(autoincrement())
+  uploadedById Int
+  title        String
+  description  String?
+  category     String
+  youtubeId    String?
+  duration     String?
+  featured     Boolean  @default(false)
+  publishedAt  DateTime @default(now())
+
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@map("videos")
+}
+
+model TeamMember {
+  id           Int     @id @default(autoincrement())
+  userId       Int?    @unique
+  name         String
+  roleTitle    String
+  department   String?
+  bio          String?
+  photoUrl     String?
+  email        String?
+  linkedin     String?
+  isLeadership Boolean @default(false)
+  sortOrder    Int     @default(0)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("team_members")
+}
+
+model JobPosition {
+  id          Int       @id @default(autoincrement())
+  postedById  Int
+  title       String
+  location    String
+  jobType     JobType
+  description String
+  status      JobStatus @default(open)
+  deadline    DateTime?
+  createdAt   DateTime  @default(now())
+
+  postedBy     User             @relation(fields: [postedById], references: [id])
+  applications JobApplication[]
+
+  @@map("job_positions")
+}
+
+model JobApplication {
+  id         Int                  @id @default(autoincrement())
+  positionId Int
+  fullName   String
+  email      String
+  phone      String?
+  cvUrl      String
+  coverNote  String?
+  status     JobApplicationStatus @default(received)
+  createdAt  DateTime             @default(now())
+
+  position JobPosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@index([positionId])
+  @@map("job_applications")
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
+}
+
+// ============================ System ============================
+
+// Key/value settings, for example admission.opensOn and admission.closesOn.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model Backup {
+  id          Int        @id @default(autoincrement())
+  kind        BackupKind
+  fileName    String
+  sizeMb      Int
+  createdById Int?
+  createdAt   DateTime   @default(now())
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("backups")
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  level     LogLevel @default(info)
+  message   String
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("activity_logs")
 }

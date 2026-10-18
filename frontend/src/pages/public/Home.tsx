@@ -175,7 +175,7 @@ const Home = () => {
                             className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
                         >
                             <img
-                                src={item.image}
+                                src={heroImage}
                                 alt={item.title}
                                 className="h-48 w-full object-cover"
                             />
