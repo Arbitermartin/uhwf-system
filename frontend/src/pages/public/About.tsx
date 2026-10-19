@@ -103,8 +103,7 @@ const About = () => {
                         </div>
                         <h3 className="mt-4 text-xl font-semibold text-gray-900">Our Vision</h3>
                         <p className="mt-2 text-gray-600">
-                            A Tanzania where people and wildlife thrive together on
-                            sustainably managed land.
+                            Tanzania with Sustained Land, Environmental, and Natural Resources with core Human- wildlife interaction that could realize security, well-being, and sustainable development of the entire community.
                         </p>
                     </div>
                     <div className="rounded-xl bg-white p-8 shadow-sm">
