@@ -729,7 +729,7 @@ model Backup {
   id          Int        @id @default(autoincrement())
   kind        BackupKind
   fileName    String
-  sizeMb      Int
+  sizeBytes   BigInt
   createdById Int?
   createdAt   DateTime   @default(now())
 

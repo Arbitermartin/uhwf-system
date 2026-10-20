@@ -34,7 +34,7 @@ import { ApplicationContext } from '../context/application-context'
 import logo from '../assets/uhwf-logo.webp'
 import { useAuth } from '../hooks/useAuth'
 import type { Role, User } from '../context/auth-context'
-import NotificationBell from '../components/notificationBell'
+import NotificationBell from '../components/NotificationBell'
 
 type NavItem = { label: string; to: string; icon: IconType; end?: boolean; needsApproval?: boolean }
 const navByRole: Record<Role, NavItem[]> = {
@@ -140,7 +140,8 @@ const ProfileMenu = ({ user, onLogout }: { user: User; onLogout: () => void }) =
         { label: 'Account settings', to: `${base}/account`, icon: FaCog },
         { label: 'Change password', to: `${base}/password`, icon: FaLock },
         { label: 'Activity log', to: `${base}/activity`, icon: FaHistory },
-        { label: 'Help center', to: `${base}/help`, icon: FaQuestionCircle },
+        // { label: 'Help center', to: `${base}/help`, icon: FaQuestionCircle },
+        { label: 'Report a problem', to: `${base}/support`, icon: FaQuestionCircle },
     ]
 
     return (
