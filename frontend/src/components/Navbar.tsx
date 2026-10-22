@@ -13,6 +13,13 @@ const navItems: NavItem[] = [
     { label: 'Home', to: '/' },
     { label: 'About Us', to: '/about' },
     {
+        label: 'ICT Systems',
+        children: [
+            { label: 'UHWF CareerConnect', to: '/careerconnect' }
+        ],
+    },
+
+    {
         label: 'Services',
         children: [
             { label: 'Land Use Planning', to: '/land' },

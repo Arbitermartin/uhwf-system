@@ -38,6 +38,11 @@ export type UserDetail = UserRow & {
         department: Department
         supervisor: string | null
     } | null
+    hr: {
+        staffId: string
+        position: string
+        department: Department
+    } | null
     application: { status: string; intake: string; submittedAt: string | null } | null
 }
 
@@ -92,7 +97,7 @@ export const listDepartments = async () =>
 
 // NEW CHANGES 2026
 
-export type CreatableRole = 'lecturer' | 'employee' | 'ict' | 'admin'
+export type CreatableRole = 'lecturer' | 'employee' | 'ict' | 'admin' | 'Hr Officer'
 
 export type UserCreate = {
     role: CreatableRole
