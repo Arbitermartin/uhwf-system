@@ -366,7 +366,8 @@ import UserEditModal from './users/UserEditModal'
 import ConfirmDeleteModal from './users/ConfirmDeleteModal'
 import AddUserModal from './users/AddUserModal'
 import { formatDate, formatDateTime, initials, roleLabel, roleTag, statusTag } from './users/userLabels'
-import ResetPasswordModal from './users/resetPasswordModal'
+import ResetPasswordModal from './users/ResetPasswordModal'
+// import ResetPasswordModal from './users/ResetPasswordModal'
 
 
 const PAGE_SIZE = 10

@@ -1,6 +1,16 @@
 import axios from 'axios'
 
-export const api = axios.create({ baseURL: '/api', withCredentials: true })
+// export const api = axios.create({ baseURL: '/api', withCredentials: true })
+
+export const api = axios.create({
+    baseURL: '/api',
+    withCredentials: true,
+})
+// export const api = axios.create({
+//     baseURL: import.meta.env.VITE_API_URL,
+//     withCredentials: true,
+// })
+
 
 export const getErrorMessage = (
     err: unknown,
@@ -21,4 +31,12 @@ export const getFieldErrors = (err: unknown): Record<string, string> => {
         if (errors) return errors
     }
     return {}
+}
+export async function getHealth() {
+    const res = await api.get('/health')
+    return res.data
+}
+export async function getAdmissions() {
+    const res = await api.get("/admissions")
+    return res.data
 }

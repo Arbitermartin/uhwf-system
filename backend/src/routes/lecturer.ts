@@ -10,6 +10,7 @@ import {
     ownedAssignment,
     ownedCourse,
 } from '../services/lecturer'
+import { checkSlotTimes, findClash } from '../services/timetableRules'
 import {
     attendancePercent,
     averagePercent,
@@ -423,6 +424,129 @@ router.delete('/announcements/:id', async (req, res) => {
     })
     if (result.count === 0) throw new HttpError(404, 'Announcement not found.')
     res.json({ message: 'Announcement deleted.' })
+})
+
+// ---------- Timetable: the weekly classes of the lecturer's own courses ----------
+const slotSchema = z.object({
+    weekday: z.number({ invalid_type_error: 'Choose the day.' }).int().min(1, 'Choose the day.').max(7, 'Choose the day.'),
+    startTime: z.string(),
+    endTime: z.string(),
+    room: z
+        .string()
+        .trim()
+        .max(40, 'The room name is too long.')
+        .transform((v) => v || null),
+})
+
+const slotSelect = {
+    id: true,
+    courseId: true,
+    weekday: true,
+    startTime: true,
+    endTime: true,
+    room: true,
+    course: { select: { code: true, title: true } },
+} as const
+
+const toSlot = (s: {
+    id: number
+    courseId: number
+    weekday: number
+    startTime: string
+    endTime: string
+    room: string | null
+    course: { code: string; title: string }
+}) => ({
+    id: s.id,
+    courseId: s.courseId,
+    courseCode: s.course.code,
+    courseTitle: s.course.title,
+    weekday: s.weekday,
+    startTime: s.startTime,
+    endTime: s.endTime,
+    room: s.room,
+    lecturer: null,
+})
+
+// Checks the times, then checks that this lecturer is free and the room is free.
+async function checkSlot(
+    profileId: number,
+    body: z.infer<typeof slotSchema>,
+    ignoreId?: number,
+) {
+    const problem = checkSlotTimes(body.startTime, body.endTime)
+    if (problem) throw new HttpError(400, problem)
+
+    const sameDay = await prisma.timetableSlot.findMany({
+        where: { weekday: body.weekday },
+        select: {
+            id: true,
+            weekday: true,
+            startTime: true,
+            endTime: true,
+            room: true,
+            course: { select: { code: true, lecturerId: true } },
+        },
+    })
+    const clash = findClash(
+        { weekday: body.weekday, startTime: body.startTime, endTime: body.endTime, room: body.room, lecturerProfileId: profileId },
+        sameDay,
+        ignoreId,
+    )
+    if (clash) throw new HttpError(409, clash)
+}
+
+router.get('/timetable', async (req, res) => {
+    const profileId = await lecturerProfileId(req.user!.id)
+    const slots = await prisma.timetableSlot.findMany({
+        where: { course: { lecturerId: profileId } },
+        orderBy: [{ weekday: 'asc' }, { startTime: 'asc' }],
+        select: slotSelect,
+    })
+    res.json({ slots: slots.map(toSlot) })
+})
+
+router.post('/courses/:id/timetable', async (req, res) => {
+    const userId = req.user!.id
+    const profileId = await lecturerProfileId(userId)
+    const course = await ownedCourse(idSchema.parse(req.params.id), profileId)
+    const body = slotSchema.parse(req.body)
+
+    await checkSlot(profileId, body)
+
+    await prisma.timetableSlot.create({
+        data: { courseId: course.id, weekday: body.weekday, startTime: body.startTime, endTime: body.endTime, room: body.room },
+    })
+    await prisma.activityLog.create({
+        data: { userId, level: 'info', message: `Class time added for ${course.code}: day ${body.weekday}, ${body.startTime} to ${body.endTime}` },
+    })
+    res.status(201).json({ message: 'Class time added.' })
+})
+
+router.patch('/timetable/:id', async (req, res) => {
+    const profileId = await lecturerProfileId(req.user!.id)
+    const id = idSchema.parse(req.params.id)
+    const body = slotSchema.parse(req.body)
+
+    const slot = await prisma.timetableSlot.findFirst({ where: { id, course: { lecturerId: profileId } }, select: { id: true } })
+    if (!slot) throw new HttpError(404, 'Class time not found.')
+
+    await checkSlot(profileId, body, id)
+
+    await prisma.timetableSlot.update({
+        where: { id },
+        data: { weekday: body.weekday, startTime: body.startTime, endTime: body.endTime, room: body.room },
+    })
+    res.json({ message: 'Class time updated.' })
+})
+
+router.delete('/timetable/:id', async (req, res) => {
+    const profileId = await lecturerProfileId(req.user!.id)
+    const result = await prisma.timetableSlot.deleteMany({
+        where: { id: idSchema.parse(req.params.id), course: { lecturerId: profileId } },
+    })
+    if (result.count === 0) throw new HttpError(404, 'Class time not found.')
+    res.json({ message: 'Class time deleted.' })
 })
 
 export default router

@@ -15,7 +15,8 @@ const navItems: NavItem[] = [
     {
         label: 'ICT Systems',
         children: [
-            { label: 'UHWF CareerConnect', to: '/careerconnect' }
+            { label: 'UHWF CareerConnect', to: '/careerconnect' },
+            { label: 'E-Learning', to: '/e-learning' },
         ],
     },
 

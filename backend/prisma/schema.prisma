@@ -137,24 +137,24 @@ enum JobApplicationStatus {
 // ============================ People ============================
 
 model User {
-  id           Int        @id @default(autoincrement())
-  fullName     String
-  email        String     @unique
-  phone        String?
-  gender       Gender?
-  passwordHash String
-  role         Role
-  status       UserStatus @default(active)
-  photoUrl     String?
-  lastLoginAt  DateTime?
-    // true for new accounts and after an admin reset: the user must choose their own password
-  mustChangePassword Boolean   @default(false)
+  id                 Int        @id @default(autoincrement())
+  fullName           String
+  email              String     @unique
+  phone              String?
+  gender             Gender?
+  passwordHash       String
+  role               Role
+  status             UserStatus @default(active)
+  photoUrl           String?
+  lastLoginAt        DateTime?
+  // true for new accounts and after an admin reset: the user must choose their own password
+  mustChangePassword Boolean    @default(false)
   passwordChangedAt  DateTime?
   // raising this number signs the user out everywhere (old login cookies stop working)
-  tokenVersion       Int       @default(0)
-  
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  tokenVersion       Int        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   studentProfile  StudentProfile?
   lecturerProfile LecturerProfile?
@@ -272,10 +272,28 @@ model Course {
   attendance         AttendanceRecord[]
   conversations      Conversation[]
   announcements      Announcement[]
+  timetableSlots     TimetableSlot[]
 
   @@index([departmentId])
   @@index([lecturerId])
   @@map("courses")
+}
+
+// A weekly class: for example Monday 08:00 to 10:00 in Room 3.
+model TimetableSlot {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  weekday   Int // 1 = Monday ... 7 = Sunday
+  startTime String // "08:00"
+  endTime   String // "10:00"
+  room      String?
+  createdAt DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([weekday])
+  @@map("timetable_slots")
 }
 
 model Enrollment {
@@ -729,7 +747,7 @@ model Backup {
   id          Int        @id @default(autoincrement())
   kind        BackupKind
   fileName    String
-  sizeBytes   BigInt
+  sizeMb      Int
   createdById Int?
   createdAt   DateTime   @default(now())
 
@@ -738,6 +756,12 @@ model Backup {
   @@index([createdAt])
   @@map("backups")
 }
+
+
+
+
+
+
 
 model ActivityLog {
   id        Int      @id @default(autoincrement())

@@ -45,4 +45,31 @@ router.post('/:id/read', async (req, res) => {
     res.json({ message: 'Marked as read.' })
 })
 
+const listQuery = z.object({
+    status: z.enum(['unread']).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(50).default(15),
+})
+
+// The full list for the Notifications page (the bell only shows the newest 15)
+router.get('/list', async (req, res) => {
+    const userId = req.user!.id
+    const q = listQuery.parse(req.query)
+    const where = { userId, ...(q.status === 'unread' && { isRead: false }) }
+
+    const [notifications, total, unreadCount] = await Promise.all([
+        prisma.notification.findMany({
+            where,
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+            skip: (q.page - 1) * q.pageSize,
+            take: q.pageSize,
+            select: { id: true, type: true, title: true, body: true, linkUrl: true, isRead: true, createdAt: true },
+        }),
+        prisma.notification.count({ where }),
+        prisma.notification.count({ where: { userId, isRead: false } }),
+    ])
+
+    res.json({ notifications, total, unreadCount, page: q.page, pageSize: q.pageSize })
+})
+
 export default router
