@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaLinkedinIn, FaEnvelope, FaUsers } from 'react-icons/fa'
 
-type Department = 'Research' | 'Field operations' | 'Community' | 'ICT and admin'
+type Department = 'Research' | 'Field operations' | 'Community' | 'ICT and admin' | 'Treasury'
 
 type Member = {
     id: number
@@ -23,76 +23,76 @@ type Member = {
 const members: Member[] = [
     {
         id: 1,
-        name: 'Amina Mushi',
-        role: 'Executive Director',
+        name: 'TP. Rogasian Chrispini Simon',
+        role: 'Chief Executive Officer',
         bio: 'Leads UHWF strategy and partnerships across Tanzania.',
-        email: 'info@uhwf.or.tz',
+        email: 'simonrogasian@gmail.com',
         leadership: true,
     },
     {
         id: 2,
-        name: 'Juma Kimaro',
-        role: 'Programs Director',
+        name: 'TP. Sarah Abdallah Katunzi',
+        role: 'Secretary General',
         bio: 'Oversees land use planning and wildlife research programs.',
-        email: 'info@uhwf.or.tz',
+        email: 'sarah.ka2nz@gmail.com',
         leadership: true,
     },
     {
         id: 3,
-        name: 'Neema Mollel',
-        role: 'Research Officer',
-        department: 'Research',
-        email: 'info@uhwf.or.tz',
+        name: 'Huberti Rogasian Paschal',
+        role: 'Treasurer',
+        department: 'Treasury',
+        email: 'rhuberti@yahoo.com',
     },
-    {
-        id: 4,
-        name: 'Hassan Said',
-        role: 'Conservation Field Officer',
-        department: 'Field operations',
-        email: 'info@uhwf.or.tz',
-    },
-    {
-        id: 5,
-        name: 'Grace Lyimo',
-        role: 'Community Outreach Lead',
-        department: 'Community',
-        email: 'info@uhwf.or.tz',
-    },
+    // {
+    //     id: 4,
+    //     name: 'Hassan Said',
+    //     role: 'Conservation Field Officer',
+    //     department: 'Field operations',
+    //     email: 'info@uhwf.or.tz',
+    // },
+    // {
+    //     id: 5,
+    //     name: 'Grace Lyimo',
+    //     role: 'Community Outreach Lead',
+    //     department: 'Community',
+    //     email: 'info@uhwf.or.tz',
+    // },
     {
         id: 6,
-        name: 'Daniel Mwakyusa',
+        name: 'Martin Arexander Kasike',
         role: 'ICT Officer',
         department: 'ICT and admin',
-        email: 'helpdesk@uhwf.or.tz',
+        email: 'kasikemartin99@gmail.com',
     },
-    {
-        id: 7,
-        name: 'Furaha Ndege',
-        role: 'Data Analyst',
-        department: 'Research',
-        email: 'info@uhwf.or.tz',
-    },
-    {
-        id: 8,
-        name: 'Emmanuel Oloo',
-        role: 'Wildlife Ranger',
-        department: 'Field operations',
-        email: 'info@uhwf.or.tz',
-    },
-    {
-        id: 9,
-        name: 'Salma Bakari',
-        role: 'Training Coordinator',
-        department: 'Community',
-        email: 'info@uhwf.or.tz',
-    },
-    {
-        id: 10,
-        name: 'Rehema Tarimo',
-        role: 'Office Administrator',
-        department: 'ICT and admin',
-        email: 'info@uhwf.or.tz',
-    },
+    // {
+    //     id: 7,
+    //     name: 'Furaha Ndege',
+    //     role: 'Data Analyst',
+    //     department: 'Research',
+    //     email: 'info@uhwf.or.tz',
+    // },
+    // {
+    //     id: 8,
+    //     name: 'Emmanuel Oloo',
+    //     role: 'Wildlife Ranger',
+    //     department: 'Field operations',
+    //     email: 'info@uhwf.or.tz',
+    // },
+    // {
+    //     id: 9,
+    //     name: 'Salma Bakari',
+    //     role: 'Training Coordinator',
+    //     department: 'Community',
+    //     email: 'info@uhwf.or.tz',
+    // },
+    // {
+    //     id: 10,
+    //     name: 'Rehema Tarimo',
+    //     role: 'Office Administrator',
+    //     department: 'ICT and admin',
+    //     email: 'info@uhwf.or.tz',
+    // },
 ]
 
 const departments: ('All' | Department)[] = [
@@ -101,6 +101,7 @@ const departments: ('All' | Department)[] = [
     'Field operations',
     'Community',
     'ICT and admin',
+    'Treasury',
 ]
 
 // Soft background colors for initials avatars
@@ -239,8 +240,8 @@ const Team = () => {
                                 onClick={() => setFilter(d)}
                                 aria-pressed={filter === d}
                                 className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${filter === d
-                                        ? 'border-green-900 bg-green-900 text-white'
-                                        : 'border-green-200 bg-white text-green-900 hover:bg-green-50'
+                                    ? 'border-green-900 bg-green-900 text-white'
+                                    : 'border-green-200 bg-white text-green-900 hover:bg-green-50'
                                     }`}
                             >
                                 {d}

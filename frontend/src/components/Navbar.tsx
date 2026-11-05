@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
         children: [
             { label: 'UHWF CareerConnect', to: '/careerconnect' },
             { label: 'E-Learning', to: '/e-learning' },
+            { label: 'Admission', to: '/admission' },
         ],
     },
 
@@ -31,7 +32,6 @@ const navItems: NavItem[] = [
         ],
     },
     { label: 'Our Team', to: '/team' },
-    { label: 'Admission', to: '/admission' },
     { label: 'Contact Us', to: '/contact' },
     {
         label: 'Resources',

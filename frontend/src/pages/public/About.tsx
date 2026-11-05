@@ -1,40 +1,39 @@
 import { Link } from 'react-router-dom'
 import {
-    FaMapMarkedAlt,
-    FaBullhorn,
-    FaFlask,
+    FaGlobeAfrica,
+    FaTree,
+    FaRecycle,
     FaChalkboardTeacher,
-    FaNetworkWired,
     FaEye,
     FaBullseye,
 } from 'react-icons/fa'
 
 const approaches = [
     {
-        title: 'Participatory Land Use Planning',
-        text: 'Working with communities so land is shared fairly between people, farming and wildlife.',
-        icon: FaMapMarkedAlt,
-    },
-    {
-        title: 'Advocacy',
-        text: 'Speaking up for policies that support sustainable land and natural resource management.',
-        icon: FaBullhorn,
-    },
-    {
-        title: 'Strategic Research',
-        text: 'Gathering evidence on human-wildlife interactions to guide better decisions.',
-        icon: FaFlask,
-    },
-    {
-        title: 'Capacity Building',
-        text: 'Training communities and partners with the skills to manage their own resources.',
+        title: 'Capacity building',
+        text: 'To improve corporate social responsibility, we engage stakeholders through capacity building and environmental education in the community. We plan communication strategies and materials, as well as events, workshops, and trainings, as well as mentorship and volunteer assistance.Working with communities so land is shared fairly between people, farming and wildlife.',
         icon: FaChalkboardTeacher,
     },
     {
-        title: 'Networking',
-        text: 'Connecting organizations, experts and communities to work together.',
-        icon: FaNetworkWired,
+        title: 'Climate change',
+        text: 'Developing climate-resilient mitigation and adaptation strategies to address climate-change concerns through a combination of measures such as tree planting, climate education, and policy advocacy.',
+        icon: FaGlobeAfrica,
     },
+    {
+        title: 'Waste management',
+        text: 'The program is intended to improve community cleanliness, sanitation, and a healthy environment. We hold clean-up events in cities, on beaches, and in tourist areas. We also educate local residents on effective trash management and the adoption of waste recycling technologies into commercial products, which benefits all actors in the waste management value chain.',
+        icon: FaRecycle,
+    },
+    {
+        title: 'Community tree planting and conservation',
+        text: 'We fund and partner with communities to not only plant but also nurture trees to maturity. This is a long-term effort that aims to improve the quality of our living environment by active planting, good tree management, and preservation of trees and other vegetation.',
+        icon: FaTree,
+    },
+    // {
+    //     title: 'Networking',
+    //     text: 'Connecting organizations, experts and communities to work together.',
+    //     icon: FaNetworkWired,
+    // },
 ]
 
 const facts = [
@@ -69,9 +68,13 @@ const About = () => {
                 <div className="mt-3 h-1 w-16 rounded bg-green-600" />
                 <p className="mt-6 leading-relaxed text-gray-600">
                     The Universal Human-Wildlife Foundation (UHWF) is a Non-Governmental
-                    Organization founded in December 2022 to operate in Tanzania
-                    Mainland. It is registered under the Non-Governmental Organizations
-                    Act, No. 24 of 2002, as altered in 2019.
+                    Organization (NGO) founded in December 2022 to operate in Tanzania
+                    Mainland and registered with registration number 00NGO/R/4248 under the
+                    Non-Governmental Organization Act, No.24 of 2002 as altered in 2019. The
+                    organization will operate on a national scale and strive to contribute to
+                    sustainable land, environmental, and natural resource management with a focus on core
+                    human-wildlife interactions through participatory land use planning, advocacy, strategic
+                    research, capacity building, and networking.
                 </p>
                 <p className="mt-4 leading-relaxed text-gray-600">
                     UHWF operates on a national scale and contributes to sustainable
