@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaLinkedinIn, FaEnvelope, FaUsers } from 'react-icons/fa'
+import martin from '../../assets/team/martin.webp'
+import Rogassian from '../../assets/team/Rogassian.webp'
+import Sarah from '../../assets/team/Sarah.webp'
+import Huberti from '../../assets/team/Huberti.webp'
 
 type Department = 'Research' | 'Field operations' | 'Community' | 'ICT and admin' | 'Treasury'
 
@@ -28,6 +32,7 @@ const members: Member[] = [
         bio: 'Leads UHWF strategy and partnerships across Tanzania.',
         email: 'simonrogasian@gmail.com',
         leadership: true,
+        photo: Rogassian,
     },
     {
         id: 2,
@@ -36,6 +41,7 @@ const members: Member[] = [
         bio: 'Oversees land use planning and wildlife research programs.',
         email: 'sarah.ka2nz@gmail.com',
         leadership: true,
+        photo: Sarah,
     },
     {
         id: 3,
@@ -43,6 +49,7 @@ const members: Member[] = [
         role: 'Treasurer',
         department: 'Treasury',
         email: 'rhuberti@yahoo.com',
+        photo: Huberti,
     },
     // {
     //     id: 4,
@@ -64,6 +71,7 @@ const members: Member[] = [
         role: 'ICT Officer',
         department: 'ICT and admin',
         email: 'kasikemartin99@gmail.com',
+        photo: martin,
     },
     // {
     //     id: 7,
