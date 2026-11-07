@@ -148,6 +148,7 @@ model User {
   photoUrl           String?
   lastLoginAt        DateTime?
   passwordResets PasswordReset[]
+  innovationReviews InnovationIdea[] @relation("InnovationReviewer")
   // true for new accounts and after an admin reset: the user must choose their own password
   mustChangePassword Boolean    @default(false)
   passwordChangedAt  DateTime?
@@ -742,6 +743,39 @@ model Setting {
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+}
+
+enum InnovationStatus {
+  received
+  reviewing
+  shortlisted
+  rejected
+}
+
+model InnovationIdea {
+  id            Int              @id @default(autoincrement())
+  fullName      String
+  email         String
+  phone         String?
+  region        String
+  category      String
+  title         String
+  description   String
+  stage         String
+  beneficiaries String?
+  link          String?
+  status        InnovationStatus @default(received)
+  createdAt     DateTime         @default(now())
+
+  // new for the review step
+  reviewedById  Int?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  reviewer      User?            @relation("InnovationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reviewedById])
+  @@map("innovation_ideas")
 }
 
 model PasswordReset {

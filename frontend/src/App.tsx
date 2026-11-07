@@ -598,6 +598,7 @@ import About from './pages/public/About'
 import Contact from './pages/public/Contact'
 import Career from './pages/public/Career'
 import Team from './pages/public/Team'
+import Innovations from './pages/public/Innovations'
 import Admission from './pages/public/Admission'
 import VideoGallery from './pages/public/VideoGallery'
 import ComingSoon from './pages/public/ComingSoon'
@@ -635,6 +636,7 @@ import StudentResults from './pages/student/StudentResults'
 import StudentTimetable from './pages/student/StudentTimetable'
 import LecturerTimetable from './pages/lecturer/LecturerTimetable'
 import EmployeeDashboard from './pages/employee/EmployeeDashboard'
+import InnovationReview from './pages/shared/InnovationReview'
 
 const publicPlaceholders = [
   '/land',
@@ -686,6 +688,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/career" element={<Career />} />
         <Route path="/team" element={<Team />} />
+        <Route path="/services/innovations" element={<Innovations />} />
         <Route path="/admission" element={<Admission />} />
         <Route path="/video-gallery" element={<VideoGallery />} />
         <Route path="/news" element={<News />} />
@@ -706,6 +709,7 @@ function App() {
           <Route path="lecturers" element={<UsersPage key="lecturer" fixedRole="lecturer" />} />
           <Route path="employees" element={<UsersPage key="employee" fixedRole="employee" />} />
           <Route path="applications" element={<ApplicationsPage />} />
+          <Route path="innovations" element={<InnovationReview />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="messages" element={<MessagesPage />} />

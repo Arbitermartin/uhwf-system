@@ -97,6 +97,8 @@ import studentRoutes from './routes/student'
 import adminNewsRoutes from './routes/adminNews'
 import adminEventsRoutes from './routes/adminEvents'
 import publicContentRoutes from './routes/publicContent'
+import innovationsRoutes from './routes/innovations'
+import innovationReviewRoutes from './routes/innovationReview'
 
 export const app = express()
 
@@ -137,6 +139,8 @@ app.use('/api/student', studentRoutes)
 app.use('/api/admin/news', adminNewsRoutes)
 app.use('/api/admin/events', adminEventsRoutes)
 app.use('/api/public', publicContentRoutes)
+app.use('/api/public/innovations', innovationsRoutes)
+app.use('/api/innovations', innovationReviewRoutes)
 
 app.use('/api', (_req, res) => {
   res.status(404).json({ message: 'Not found.' })
