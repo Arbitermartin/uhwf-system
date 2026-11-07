@@ -147,6 +147,7 @@ model User {
   status             UserStatus @default(active)
   photoUrl           String?
   lastLoginAt        DateTime?
+  passwordResets PasswordReset[]
   // true for new accounts and after an admin reset: the user must choose their own password
   mustChangePassword Boolean    @default(false)
   passwordChangedAt  DateTime?
@@ -743,6 +744,20 @@ model Setting {
   @@map("settings")
 }
 
+model PasswordReset {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("PasswordResetToken")
+}
+
 model Backup {
   id          Int        @id @default(autoincrement())
   kind        BackupKind
@@ -756,12 +771,6 @@ model Backup {
   @@index([createdAt])
   @@map("backups")
 }
-
-
-
-
-
-
 
 model ActivityLog {
   id        Int      @id @default(autoincrement())

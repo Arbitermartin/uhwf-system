@@ -173,6 +173,12 @@ const Navbar = () => {
                         ),
                     )}
                     <Link
+                        to="/Donate"
+                        className="ml-3 rounded-md bg-amber-400 px-5 py-2 font-semibold text-green-950 transition-colors hover:bg-amber-300"
+                    >
+                        Donate
+                    </Link>
+                    <Link
                         to="/login"
                         className="ml-3 rounded-md bg-green-700 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-800"
                     >
@@ -219,6 +225,12 @@ const Navbar = () => {
                                 </NavLink>
                             ),
                         )}
+                        <Link
+                            to="/Donate"
+                            className="mt-2 block rounded-md bg-amber-400 px-3 py-2 text-center font-semibold  text-green-950 transition-colors hover:bg-amber-300"
+                        >
+                            Donate
+                        </Link>
                         <Link
                             to="/login"
                             className="mt-2 block rounded-md bg-green-700 px-3 py-2 text-center text-base font-semibold text-white hover:bg-green-800"
