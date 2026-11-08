@@ -637,6 +637,12 @@ import StudentTimetable from './pages/student/StudentTimetable'
 import LecturerTimetable from './pages/lecturer/LecturerTimetable'
 import EmployeeDashboard from './pages/employee/EmployeeDashboard'
 import InnovationReview from './pages/shared/InnovationReview'
+import Land from './pages/public/Land'
+import Wildlife from './pages/public/Wildlife'
+import Community from './pages/public/Community'
+import Network from './pages/public/Network'
+import Enrollment from './pages/admin/EnrollmentsPage'
+import Account from './pages/ict/AccountsPage'
 
 const publicPlaceholders = [
   '/land',
@@ -650,8 +656,7 @@ const publicPlaceholders = [
 
 // "password" is not listed here any more: every dashboard has a real Change password page.
 const adminPlaceholders = [
-  'enrollments', 'videos',
-  'account', 'activity', 'help',
+  'videos', 'account', 'activity', 'help',
 ]
 const studentPlaceholders = ['account', 'activity', 'help']
 const lecturerPlaceholders = [
@@ -686,6 +691,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/Land" element={<Land />} />
+        <Route path="/Wildlife" element={<Wildlife />} />
+        <Route path="/Network" element={<Network />} />
+        <Route path="/services/community" element={<Community />} />
         <Route path="/career" element={<Career />} />
         <Route path="/team" element={<Team />} />
         <Route path="/services/innovations" element={<Innovations />} />
@@ -710,8 +719,10 @@ function App() {
           <Route path="employees" element={<UsersPage key="employee" fixedRole="employee" />} />
           <Route path="applications" element={<ApplicationsPage />} />
           <Route path="innovations" element={<InnovationReview />} />
+          <Route path="enrollments" element={<Enrollment />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="settings" element={<SettingsPage />} />
+
           <Route path="messages" element={<MessagesPage />} />
           <Route path="news" element={<ContentPage tab="news" />} />
           <Route path="events" element={<ContentPage tab="events" />} />
@@ -773,10 +784,12 @@ function App() {
           <Route path="tickets" element={<IctTicketsPage />} />
           <Route path="logs" element={<IctLogsPage />} />
           <Route path="backups" element={<IctBackupsPage />} />
+          <Route path="accounts" element={<Account />} />
           <Route path="password" element={<ChangePassword />} />
           <Route path="support" element={<ReportProblem />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="innovations" element={<InnovationReview />} />
           {ictPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
@@ -791,6 +804,7 @@ function App() {
           <Route path="support" element={<ReportProblem />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="innovations" element={<InnovationReview />} />
           {employeePlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
