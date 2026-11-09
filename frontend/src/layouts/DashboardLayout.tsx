@@ -28,6 +28,8 @@ import {
     FaChartBar,
     FaBullhorn,
     FaLightbulb,
+    FaHome,
+    FaHeart,
     FaTicketAlt, FaCloudUploadAlt, FaShieldAlt, FaServer, FaDatabase, FaTools,
     FaTasks, FaClock, FaCalendarCheck, FaLifeRing,
 } from 'react-icons/fa'
@@ -46,6 +48,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Lecturers', to: '/admin/lecturers', icon: FaChalkboardTeacher },
         { label: 'Employees', to: '/admin/employees', icon: FaBriefcase },
         { label: 'Courses', to: '/admin/courses', icon: FaBook },
+        { label: 'Careers', to: '/admin/careers', icon: FaBriefcase },
         { label: 'Enrollments', to: '/admin/enrollments', icon: FaClipboardCheck },
         { label: 'Innovation ideas', to: '/admin/innovations', icon: FaLightbulb },
         { label: 'News and events', to: '/admin/news', icon: FaNewspaper },
@@ -97,6 +100,15 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Maintenance', to: '/ict/maintenance', icon: FaTools },
         { label: 'Settings', to: '/ict/settings', icon: FaCog },
     ],
+    member: [
+        { label: 'Dashboard', to: '/member', icon: FaHome, end: true },
+        { label: 'Events', to: '/events', icon: FaCalendarAlt },
+        { label: 'News', to: '/news', icon: FaNewspaper },
+        { label: 'Donate', to: '/donate', icon: FaHeart },
+        { label: 'Notifications', to: '/member/notifications', icon: FaBell },
+        { label: 'My profile', to: '/member/profile', icon: FaUser },
+        { label: 'Report a problem', to: '/member/support', icon: FaLifeRing },
+    ],
 }
 
 const roleLabel: Record<Role, string> = {
@@ -105,6 +117,7 @@ const roleLabel: Record<Role, string> = {
     lecturer: 'Lecturer',
     employee: 'Employee',
     ict: 'ICT Officer',
+    member: 'Member',
 }
 
 const Avatar = ({ user, size }: { user: User; size: string }) => (

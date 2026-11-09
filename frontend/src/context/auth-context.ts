@@ -21,7 +21,7 @@
 // export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 import { createContext } from 'react'
 
-export type Role = 'student' | 'lecturer' | 'employee' | 'ict' | 'admin'
+export type Role = 'student' | 'lecturer' | 'employee' | 'ict' | 'admin' | 'member'
 
 export type User = {
     id: number

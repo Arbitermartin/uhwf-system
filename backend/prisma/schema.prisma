@@ -18,6 +18,7 @@ enum Role {
   student
   employee
   ict
+  member
 }
 
 enum UserStatus {
@@ -137,23 +138,23 @@ enum JobApplicationStatus {
 // ============================ People ============================
 
 model User {
-  id                 Int        @id @default(autoincrement())
+  id                 Int              @id @default(autoincrement())
   fullName           String
-  email              String     @unique
+  email              String           @unique
   phone              String?
   gender             Gender?
   passwordHash       String
   role               Role
-  status             UserStatus @default(active)
+  status             UserStatus       @default(active)
   photoUrl           String?
   lastLoginAt        DateTime?
-  passwordResets PasswordReset[]
-  innovationReviews InnovationIdea[] @relation("InnovationReviewer")
+  passwordResets     PasswordReset[]
+  innovationReviews  InnovationIdea[] @relation("InnovationReviewer")
   // true for new accounts and after an admin reset: the user must choose their own password
-  mustChangePassword Boolean    @default(false)
+  mustChangePassword Boolean          @default(false)
   passwordChangedAt  DateTime?
   // raising this number signs the user out everywhere (old login cookies stop working)
-  tokenVersion       Int        @default(0)
+  tokenVersion       Int              @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -161,6 +162,7 @@ model User {
   studentProfile  StudentProfile?
   lecturerProfile LecturerProfile?
   employeeProfile EmployeeProfile?
+  memberProfile   MemberProfile?
   supervisees     EmployeeProfile[] @relation("EmployeeSupervisor")
   teamMember      TeamMember?
 
@@ -768,10 +770,10 @@ model InnovationIdea {
   createdAt     DateTime         @default(now())
 
   // new for the review step
-  reviewedById  Int?
-  reviewedAt    DateTime?
-  reviewNote    String?
-  reviewer      User?            @relation("InnovationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedById Int?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  reviewer     User?     @relation("InnovationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([reviewedById])
@@ -817,4 +819,19 @@ model ActivityLog {
 
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+model MemberProfile {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  memberNumber String   @unique
+  region       String?
+  interests    String[]
+  newsletter   Boolean  @default(false)
+  joinedAt     DateTime @default(now())
+  validUntil   DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("member_profiles")
 }

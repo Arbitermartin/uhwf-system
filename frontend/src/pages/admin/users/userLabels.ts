@@ -7,6 +7,7 @@ export const roleLabel: Record<Role, string> = {
     student: 'Student',
     employee: 'Employee',
     ict: 'ICT',
+    member: 'Member',
 }
 
 export const roleTag: Record<Role, string> = {
@@ -15,6 +16,7 @@ export const roleTag: Record<Role, string> = {
     student: 'bg-green-100 text-green-900',
     employee: 'bg-lime-100 text-lime-900',
     ict: 'bg-sky-100 text-sky-900',
+    member: 'bg-teal-100 text-teal-900'
 }
 
 export const statusTag: Record<UserStatus, string> = {

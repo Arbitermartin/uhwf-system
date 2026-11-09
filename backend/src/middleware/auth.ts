@@ -1,44 +1,8 @@
-// import type { RequestHandler } from 'express'
-// import type { Role } from '@prisma/client'
-// import { prisma } from '../prisma'
-// import { COOKIE_NAME, verifyToken } from '../services/token'
 
-// export const requireAuth: RequestHandler = async (req, res, next) => {
-//   const token = req.cookies?.[COOKIE_NAME]
-//   const userId = typeof token === 'string' ? verifyToken(token) : null
-//   if (!userId) {
-//     res.status(401).json({ message: 'Please sign in.' })
-//     return
-//   }
-
-//   // Load the user on every request so a suspended account or a changed role
-//   // takes effect immediately, not when the token expires.
-//   const user = await prisma.user.findUnique({
-//     where: { id: userId },
-//     select: { id: true, fullName: true, email: true, role: true, status: true },
-//   })
-//   if (!user || user.status !== 'active') {
-//     res.status(401).json({ message: 'Please sign in.' })
-//     return
-//   }
-
-//   req.user = { id: user.id, fullName: user.fullName, email: user.email, role: user.role }
-//   next()
-// }
-
-// export const requireRole =
-//   (...roles: Role[]): RequestHandler =>
-//   (req, res, next) => {
-//     if (!req.user || !roles.includes(req.user.role)) {
-//       res.status(403).json({ message: 'You do not have permission to do this.' })
-//       return
-//     }
-//     next()
-//   }
 import type { RequestHandler } from 'express'
 import type { Role } from '@prisma/client'
 import { prisma } from '../prisma'
-import { COOKIE_NAME, verifyToken } from '../services/token'
+import { COOKIE_NAME, cookieMaxAgeMs, cookieOptions, signToken, verifyToken } from '../services/token'
 
 const authenticate =
   (allowTemporaryPassword: boolean): RequestHandler =>
@@ -77,6 +41,12 @@ const authenticate =
         })
         return
       }
+
+      res.cookie(COOKIE_NAME, signToken(user.id, user.tokenVersion), {
+        ...cookieOptions,
+        maxAge: cookieMaxAgeMs,
+      })
+
 
       req.user = { id: user.id, fullName: user.fullName, email: user.email, role: user.role }
       next()

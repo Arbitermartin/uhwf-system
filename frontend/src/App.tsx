@@ -643,6 +643,10 @@ import Community from './pages/public/Community'
 import Network from './pages/public/Network'
 import Enrollment from './pages/admin/EnrollmentsPage'
 import Account from './pages/ict/AccountsPage'
+import CareersPage from './pages/admin/careersPage'
+import MemberRegister from './pages/public/MemberRegister'
+import MemberLayout from './layouts/MemberLayout'
+import MemberHome from './pages/member/MemberHome'
 
 const publicPlaceholders = [
   '/land',
@@ -702,6 +706,7 @@ function App() {
         <Route path="/video-gallery" element={<VideoGallery />} />
         <Route path="/news" element={<News />} />
         <Route path="/news/:id" element={<NewsArticle />} />
+        <Route path="/become-a-member" element={<MemberRegister />} />
         <Route path="/events" element={<Events />} />
         <Route path="/donate" element={<Donate />} />
         {publicPlaceholders.map((path) => (
@@ -720,6 +725,7 @@ function App() {
           <Route path="applications" element={<ApplicationsPage />} />
           <Route path="innovations" element={<InnovationReview />} />
           <Route path="enrollments" element={<Enrollment />} />
+          <Route path="careers" element={<CareersPage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="settings" element={<SettingsPage />} />
 
@@ -808,6 +814,15 @@ function App() {
           {employeePlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
+        </Route>
+      </Route>
+      <Route path="/member" element={<ProtectedRoute roles={['member']} />}>
+        <Route element={<MemberLayout />}>
+          <Route index element={<MemberHome />} />
+          <Route path="password" element={<ChangePassword />} />
+          <Route path="support" element={<ReportProblem />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
     </Routes>

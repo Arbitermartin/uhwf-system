@@ -35,7 +35,7 @@ import type { CookieOptions } from 'express'
 import { env } from '../config'
 
 export const COOKIE_NAME = 'uhwf_token'
-const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60
+const SEVEN_DAYS_SECONDS = 30 * 60
 
 export const cookieOptions: CookieOptions = {
   httpOnly: true, // JavaScript in the browser can never read this cookie

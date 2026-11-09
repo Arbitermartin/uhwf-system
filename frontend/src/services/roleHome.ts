@@ -7,4 +7,5 @@ export const roleHome: Record<Role, string> = {
     student: '/student',
     employee: '/employee',
     ict: '/ict',
+    member: '/member',
 }
