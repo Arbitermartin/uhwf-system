@@ -150,6 +150,8 @@ model User {
   lastLoginAt        DateTime?
   passwordResets     PasswordReset[]
   innovationReviews  InnovationIdea[] @relation("InnovationReviewer")
+  ideas        Idea[]
+  ideaFeedback IdeaFeedback[]
   // true for new accounts and after an admin reset: the user must choose their own password
   mustChangePassword Boolean          @default(false)
   passwordChangedAt  DateTime?
@@ -834,4 +836,56 @@ model MemberProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("member_profiles")
+}
+
+enum IdeaStatus {
+  submitted
+  under_review
+  needs_info
+  approved
+  not_selected
+}
+
+enum IdeaRecommendation {
+  support
+  needs_work
+  not_now
+}
+
+model Idea {
+  id             Int        @id @default(autoincrement())
+  authorId       Int
+  title          String
+  category       String
+  description    String
+  status         IdeaStatus @default(submitted)
+  attachmentPath String?
+  attachmentName String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  feedback IdeaFeedback[]
+
+  @@index([authorId, createdAt])
+  @@index([status, createdAt])
+  @@map("ideas")
+}
+
+model IdeaFeedback {
+  id             Int                 @id @default(autoincrement())
+  ideaId         Int
+  authorId       Int
+  comment        String
+  recommendation IdeaRecommendation?
+  impact         Int?
+  feasibility    Int?
+  effort         Int?
+  createdAt      DateTime            @default(now())
+
+  idea   Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([ideaId, createdAt])
+  @@map("idea_feedback")
 }

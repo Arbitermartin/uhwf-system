@@ -35,6 +35,11 @@ import ictAccountsRoutes from './routes/ictAccounts'
 import adminJobsRoutes from './routes/adminJobs'
 import publicJobsRoutes from './routes/publicJobs'
 import memberRoutes from './routes/members'
+import ideaRoutes from './routes/ideas'
+import { adminVideosRouter, publicVideosRouter } from './routes/videos'
+import invitationRoutes from './routes/invitations'
+
+
 
 export const app = express()
 
@@ -116,6 +121,10 @@ app.use('/api/ict/accounts', ictAccountsRoutes)
 app.use('/api/admin/jobs', adminJobsRoutes)
 app.use('/api/public/jobs', publicJobsRoutes)
 app.use('/api/members', memberRoutes)
+app.use('/api/ideas', ideaRoutes)
+app.use('/api/public/videos', publicVideosRouter)
+app.use('/api/admin/videos', adminVideosRouter)
+app.use('/api/invitations', invitationRoutes)
 
 app.use('/api', (_req, res) => {
   res.status(404).json({ message: 'Not found.' })

@@ -64,6 +64,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Profile', to: '/student/profile', icon: FaUser },
         { label: 'My courses', to: '/student/courses', icon: FaBook, needsApproval: true },
         { label: 'Timetable', to: '/student/timetable', icon: FaCalendarAlt, needsApproval: true },
+        { label: 'Innovation', to: '/student/ideas', icon: FaLightbulb },
         { label: 'Results', to: '/student/results', icon: FaChartBar, needsApproval: true },
     ],
     lecturer: [
@@ -73,6 +74,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Assignments', to: '/lecturer/assignments', icon: FaFileAlt },
         { label: 'Grades', to: '/lecturer/grades', icon: FaChartBar },
         { label: 'Announcements', to: '/lecturer/announcements', icon: FaBullhorn },
+        { label: 'Innovation', to: '/student/ideas', icon: FaLightbulb },
         { label: 'Messages', to: '/lecturer/messages', icon: FaEnvelope },
         { label: 'Timetable', to: '/lecturer/timetable', icon: FaCalendarAlt },
     ],
@@ -84,6 +86,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Leave requests', to: '/employee/leave', icon: FaCalendarCheck },
         { label: 'Announcements', to: '/employee/announcements', icon: FaBullhorn },
         { label: 'Innovation ideas', to: '/employee/innovations', icon: FaLightbulb },
+
         { label: 'Messages', to: '/employee/messages', icon: FaEnvelope },
         { label: 'Report a problem', to: '/employee/support', icon: FaLifeRing },
     ],

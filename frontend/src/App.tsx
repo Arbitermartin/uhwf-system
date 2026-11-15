@@ -647,6 +647,10 @@ import CareersPage from './pages/admin/careersPage'
 import MemberRegister from './pages/public/MemberRegister'
 import MemberLayout from './layouts/MemberLayout'
 import MemberHome from './pages/member/MemberHome'
+import IdeasPage from './pages/shared/IdeasPage'
+import VideosPage from './pages/admin/VideosPage'
+
+
 
 const publicPlaceholders = [
   '/land',
@@ -660,7 +664,7 @@ const publicPlaceholders = [
 
 // "password" is not listed here any more: every dashboard has a real Change password page.
 const adminPlaceholders = [
-  'videos', 'account', 'activity', 'help',
+  'account', 'activity', 'help',
 ]
 const studentPlaceholders = ['account', 'activity', 'help']
 const lecturerPlaceholders = [
@@ -726,6 +730,7 @@ function App() {
           <Route path="innovations" element={<InnovationReview />} />
           <Route path="enrollments" element={<Enrollment />} />
           <Route path="careers" element={<CareersPage />} />
+          <Route path="ideas" element={<IdeasPage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="settings" element={<SettingsPage />} />
 
@@ -736,6 +741,7 @@ function App() {
           <Route path="support" element={<ReportProblem />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="videos" element={<VideosPage />} />
           {adminPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
@@ -752,6 +758,7 @@ function App() {
             <Route path="support" element={<ReportProblem />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="ideas" element={<IdeasPage />} />
             {studentPlaceholders.map((path) => (
               <Route key={path} path={path} element={<ComingSoon />} />
             ))}
@@ -777,6 +784,7 @@ function App() {
           <Route path="support" element={<ReportProblem />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="ideas" element={<IdeasPage />} />
           {lecturerPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
@@ -796,6 +804,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="innovations" element={<InnovationReview />} />
+          <Route path="ideas" element={<IdeasPage />} />
           {ictPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
@@ -811,6 +820,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="innovations" element={<InnovationReview />} />
+          <Route path="ideas" element={<IdeasPage />} />
           {employeePlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
           ))}
@@ -823,6 +833,7 @@ function App() {
           <Route path="support" element={<ReportProblem />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="ideas" element={<IdeasPage />} />
         </Route>
       </Route>
     </Routes>
