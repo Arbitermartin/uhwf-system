@@ -38,6 +38,8 @@ import memberRoutes from './routes/members'
 import ideaRoutes from './routes/ideas'
 import { adminVideosRouter, publicVideosRouter } from './routes/videos'
 import invitationRoutes from './routes/invitations'
+import employeeRoutes from './routes/employee'
+import adminStaffRoutes from './routes/adminStaff'
 
 
 
@@ -125,6 +127,9 @@ app.use('/api/ideas', ideaRoutes)
 app.use('/api/public/videos', publicVideosRouter)
 app.use('/api/admin/videos', adminVideosRouter)
 app.use('/api/invitations', invitationRoutes)
+app.use('/api/employee', employeeRoutes)
+app.use('/api/admin/staff', adminStaffRoutes)
+
 
 app.use('/api', (_req, res) => {
   res.status(404).json({ message: 'Not found.' })

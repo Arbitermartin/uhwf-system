@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { IconType } from 'react-icons'
 import {
     FaTachometerAlt,
@@ -38,6 +38,8 @@ import logo from '../assets/uhwf-logo.webp'
 import { useAuth } from '../hooks/useAuth'
 import type { Role, User } from '../context/auth-context'
 import NotificationBell from '../components/NotificationBell'
+import SidebarNav from './SidebarNav'
+
 
 type NavItem = { label: string; to: string; icon: IconType; end?: boolean; needsApproval?: boolean }
 const navByRole: Record<Role, NavItem[]> = {
@@ -50,10 +52,12 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Courses', to: '/admin/courses', icon: FaBook },
         { label: 'Careers', to: '/admin/careers', icon: FaBriefcase },
         { label: 'Enrollments', to: '/admin/enrollments', icon: FaClipboardCheck },
-        { label: 'Innovation ideas', to: '/admin/innovations', icon: FaLightbulb },
+        { label: 'Innovation', to: '/admin/ideas', icon: FaLightbulb },
+        { label: 'Visitor ideas', to: '/admin/innovations', icon: FaLightbulb },
         { label: 'News and events', to: '/admin/news', icon: FaNewspaper },
         { label: 'Videos', to: '/admin/videos', icon: FaVideo },
         { label: 'Applications', to: '/admin/applications', icon: FaFileAlt },
+        { label: 'Staff work', to: '/admin/staff-work', icon: FaBriefcase },
         { label: 'Messages', to: '/admin/messages', icon: FaEnvelope },
         { label: 'Settings', to: '/admin/settings', icon: FaCog },
     ],
@@ -74,19 +78,18 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Assignments', to: '/lecturer/assignments', icon: FaFileAlt },
         { label: 'Grades', to: '/lecturer/grades', icon: FaChartBar },
         { label: 'Announcements', to: '/lecturer/announcements', icon: FaBullhorn },
-        { label: 'Innovation', to: '/student/ideas', icon: FaLightbulb },
+        { label: 'Innovation', to: '/lecturer/ideas', icon: FaLightbulb },
         { label: 'Messages', to: '/lecturer/messages', icon: FaEnvelope },
         { label: 'Timetable', to: '/lecturer/timetable', icon: FaCalendarAlt },
     ],
-    // Placeholders until we build these dashboards
     employee: [
         { label: 'Dashboard', to: '/employee', icon: FaTachometerAlt, end: true },
         { label: 'My tasks', to: '/employee/tasks', icon: FaTasks },
         { label: 'Attendance', to: '/employee/attendance', icon: FaClock },
         { label: 'Leave requests', to: '/employee/leave', icon: FaCalendarCheck },
         { label: 'Announcements', to: '/employee/announcements', icon: FaBullhorn },
-        { label: 'Innovation ideas', to: '/employee/innovations', icon: FaLightbulb },
-
+        { label: 'Innovation', to: '/employee/ideas', icon: FaLightbulb },
+        { label: 'Visitor ideas', to: '/employee/innovations', icon: FaLightbulb },
         { label: 'Messages', to: '/employee/messages', icon: FaEnvelope },
         { label: 'Report a problem', to: '/employee/support', icon: FaLifeRing },
     ],
@@ -96,7 +99,8 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'System logs', to: '/ict/logs', icon: FaFileAlt },
         { label: 'Backup and restore', to: '/ict/backups', icon: FaCloudUploadAlt },
         { label: 'User accounts', to: '/ict/accounts', icon: FaUsers },
-        { label: 'Innovation ideas', to: '/ict/innovations', icon: FaLightbulb },
+        { label: 'Innovation', to: '/ict/ideas', icon: FaLightbulb },
+        { label: 'Visitor ideas', to: '/ict/innovations', icon: FaLightbulb },
         { label: 'Security', to: '/ict/security', icon: FaShieldAlt },
         { label: 'Server health', to: '/ict/server', icon: FaServer },
         { label: 'Database', to: '/ict/database', icon: FaDatabase },
@@ -241,8 +245,6 @@ const DashboardLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     const application = useContext(ApplicationContext)
-    // const approved = application ? application.app.approved : true
-    // const approved = application ? application.app.approved : true
     const approved = application ? application.app?.status === 'approved' : true
 
     // Close the mobile sidebar after navigating
@@ -252,10 +254,6 @@ const DashboardLayout = () => {
 
     if (!user) return null // ProtectedRoute redirects before this renders
 
-    // const handleLogout = () => {
-    //     logout()
-    //     navigate('/login', { replace: true })
-    // }
     const handleLogout = async () => {
         await logout()
         navigate('/login', { replace: true })
@@ -298,37 +296,12 @@ const DashboardLayout = () => {
                 </div>
 
                 <nav className="flex-1 overflow-y-auto px-3 py-2">
-                    {nav.map(({ label, to, icon: Icon, end, needsApproval }) => {
-                        if (needsApproval && !approved) {
-                            return (
-                                <div
-                                    key={to}
-                                    title="Unlocks after your application is approved"
-                                    className="mb-0.5 flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-green-100/50"
-                                >
-                                    <Icon className="h-4 w-4 shrink-0" />
-                                    {label}
-                                    <FaLock className="ml-auto h-3 w-3" />
-                                </div>
-                            )
-                        }
-                        return (
-                            <NavLink
-                                key={to}
-                                to={to}
-                                end={end}
-                                className={({ isActive }) =>
-                                    `mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${isActive
-                                        ? 'bg-amber-400 font-semibold text-green-950'
-                                        : 'text-green-100 hover:bg-white/10'
-                                    }`
-                                }
-                            >
-                                <Icon className="h-4 w-4 shrink-0" />
-                                {label}
-                            </NavLink>
-                        )
-                    })}
+                    <SidebarNav
+                        items={nav}
+                        role={user.role}
+                        approved={approved}
+                        onNavigate={() => setSidebarOpen(false)}
+                    />
                 </nav>
 
                 {/* Profile + logout */}
@@ -374,16 +347,6 @@ const DashboardLayout = () => {
                     </div>
 
                     <div className="ml-auto flex items-center gap-3">
-                        {/* <button
-                            type="button"
-                            aria-label="Notifications"
-                            className="relative rounded-full p-2 text-green-950 hover:bg-green-50"
-                        >
-                            <FaBell className="h-5 w-5" />
-                            <span className="absolute right-0.5 top-0 rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">
-                                4
-                            </span>
-                        </button> */}
                         <NotificationBell />
                         <ProfileMenu user={user} onLogout={handleLogout} />
                     </div>

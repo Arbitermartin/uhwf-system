@@ -30,7 +30,7 @@ const base = z.object({
         .transform((v) => v || null),
 })
 
-const staffId = z.string().trim().min(3, 'Staff ID is too short.').max(40)
+// const staffId = z.string().trim().min(3, 'Staff ID is too short.').max(40)
 const departmentId = z.coerce
     .number({ invalid_type_error: 'Choose a department.' })
     .int('Choose a department.')
@@ -40,13 +40,13 @@ const departmentId = z.coerce
 export const inviteSchema = z.discriminatedUnion('role', [
     base.extend({
         role: z.literal('lecturer'),
-        staffId,
+        // staffId,
         departmentId,
         qualification: z.string().trim().max(100).default(''),
     }),
     base.extend({
         role: z.literal('employee'),
-        staffId,
+        // staffId,
         departmentId,
         position: z.string().trim().min(2, 'Position is too short.').max(100),
     }),
@@ -60,6 +60,7 @@ const escapeHtml = (v: string) =>
 export type InvitationDetails = {
     name: string
     email: string
+    staffId: string | null
     role: string // the label, for example "ICT Officer"
     department: string | null
     position: string | null
@@ -74,6 +75,7 @@ export function invitationEmail(d: InvitationDetails) {
     const rows: [string, string][] = [
         ['Name', d.name],
         ['Email', d.email],
+        ...(d.staffId ? ([['Staff ID', d.staffId]] as [string, string][]) : []),
         ...(d.department ? ([['Department', d.department]] as [string, string][]) : []),
         ['Role', roleText],
         ['Account status', 'Pending activation'],

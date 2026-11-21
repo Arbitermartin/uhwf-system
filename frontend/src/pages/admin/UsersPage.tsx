@@ -1,5 +1,3 @@
-
-// export default UsersPage
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FaSearch, FaEye, FaEdit, FaTrash, FaPlus, FaKey } from 'react-icons/fa'

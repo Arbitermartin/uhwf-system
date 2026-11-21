@@ -1,24 +1,4 @@
 
-// import { createContext } from 'react'
-
-// export type Role = 'student' | 'lecturer' | 'employee' | 'ict' | 'admin'
-
-// export type User = {
-//     id: number
-//     name: string
-//     email: string
-//     role: Role
-//     photo?: string
-// }
-
-// export type AuthContextValue = {
-//     user: User | null
-//     loading: boolean
-//     login: (identifier: string, password: string) => Promise<User>
-//     logout: () => Promise<void>
-// }
-
-// export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 import { createContext } from 'react'
 
 export type Role = 'student' | 'lecturer' | 'employee' | 'ict' | 'admin' | 'member'

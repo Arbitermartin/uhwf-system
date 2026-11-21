@@ -1,6 +1,3 @@
-
-
-// export default Admission
 import { useEffect, useState } from 'react'
 import { FaCheckCircle, FaClock, FaLock } from 'react-icons/fa'
 import SignupModal from '../../components/SignupModal'

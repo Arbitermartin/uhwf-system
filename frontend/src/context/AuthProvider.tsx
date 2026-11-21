@@ -1,43 +1,5 @@
 
-// import { useEffect, useState } from 'react'
-// import type { ReactNode } from 'react'
-// import { AuthContext } from './auth-context'
-// import type { User } from './auth-context'
-// import { api } from '../services/api'
 
-// export const AuthProvider = ({ children }: { children: ReactNode }) => {
-//     const [user, setUser] = useState<User | null>(null)
-//     const [loading, setLoading] = useState(true)
-
-//     // On every page load, ask the server who is signed in (the cookie holds the session).
-//     useEffect(() => {
-//         api
-//             .get<{ user: User }>('/auth/me')
-//             .then((res) => setUser(res.data.user))
-//             .catch(() => setUser(null))
-//             .finally(() => setLoading(false))
-//     }, [])
-
-//     const login = async (identifier: string, password: string) => {
-//         const res = await api.post<{ user: User }>('/auth/login', { identifier, password })
-//         setUser(res.data.user)
-//         return res.data.user
-//     }
-
-//     const logout = async () => {
-//         try {
-//             await api.post('/auth/logout')
-//         } finally {
-//             setUser(null)
-//         }
-//     }
-
-//     return (
-//         <AuthContext.Provider value={{ user, loading, login, logout, updateUser: setUser }}>
-//             {children}
-//         </AuthContext.Provider>
-//     )
-// }
 import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AuthContext } from './auth-context'
