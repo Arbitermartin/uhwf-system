@@ -3,9 +3,18 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FaMapMarkedAlt, FaPaw, FaUsers, FaCalendarAlt, FaMapMarkerAlt, FaNewspaper } from 'react-icons/fa'
 import heroImage from '../../assets/conservation.webp'
+import HeroSlideshow from '../../components/HeroSlideshow'
+import hero2 from '../../assets/hero/hero-2.webp'
+import hero3 from '../../assets/hero/hero-3.webp'
+import hero4 from '../../assets/hero/hero-4.webp'
+import hero5 from '../../assets/hero/hero-5.webp'
+
+const heroSlides = [heroImage, hero2, hero3, hero4, hero5]
 import { getErrorMessage } from '../../services/api'
 import { badgeParts, getPublicHome, longDate } from '../../services/content'
 import type { PublicEvent, PublicNews } from '../../services/content'
+import PartnersSlideshow from '../../components/PartnersSlideshow'
+import TypewriterText from '../../components/TypewriterText'
 
 const focusAreas = [
     { id: 'land', to: '/land', icon: FaMapMarkedAlt },
@@ -47,9 +56,7 @@ const Home = () => {
     return (
         <div>
             {/* Hero */}
-            <section className="relative">
-                <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-green-950/70" />
+            {/* <HeroSlideshow slides={heroSlides}>
                 <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
                     <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-green-300">{t('home.eyebrow')}</p>
                     <h1 className="max-w-2xl text-4xl font-bold text-white sm:text-5xl lg:text-6xl">{t('home.heroTitle')}</h1>
@@ -63,7 +70,32 @@ const Home = () => {
                         </Link>
                     </div>
                 </div>
-            </section>
+            </HeroSlideshow> */}
+            {/* Hero */}
+            <HeroSlideshow slides={heroSlides}>
+                <div className="mx-auto max-w-7xl px-4 py-24 pb-28 sm:px-6 sm:py-32 sm:pb-36 lg:px-8">
+                    <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-green-300">{t('home.eyebrow')}</p>
+                    {/* <h1 className="max-w-2xl text-4xl font-bold text-white sm:text-5xl lg:text-6xl">{t('home.heroTitle')}</h1> */}
+                    <h1 className="max-w-2xl text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
+                        <TypewriterText
+                            text={t('home.heroTitle')}
+                            speed={100}
+                            deleteSpeed={50}
+                            pause={2000}
+                        />
+                    </h1>
+                    <p className="mt-5 max-w-xl text-lg text-green-50">{t('home.heroText')}</p>
+                    <div className="mt-8 flex flex-wrap gap-3">
+                        <Link to="/register" className="rounded-md bg-green-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-green-400">
+                            {t('home.register')}
+                        </Link>
+                        <Link to="/about" className="rounded-md border border-white/70 px-6 py-3 font-semibold text-white transition-colors hover:bg-white/10">
+                            {t('home.learnMore')}
+                        </Link>
+                    </div>
+                </div>
+            </HeroSlideshow>
+
 
             {/* About */}
             <section className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
@@ -193,6 +225,7 @@ const Home = () => {
                     )}
                 </div>
             </section>
+            <PartnersSlideshow />
 
             {/* Call to action */}
             <section className="bg-green-800 py-14">

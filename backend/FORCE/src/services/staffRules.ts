@@ -1,3 +1,5 @@
+
+
 import { dayToDate, isRealDay } from './lecturerRules'
 
 // Rules for employee attendance, tasks and leave. Nothing here touches the database.
@@ -50,11 +52,38 @@ export function checkLeaveRequest(r: { type: LeaveType; start: string; end: stri
     return { ok: true, days }
 }
 
-export type TaskStatus = 'todo' | 'in_progress' | 'done'
+export type TaskStatus = 'todo' | 'in_progress' | 'submitted' | 'returned' | 'done'
 
-// A task only moves forward. Nobody reopens a finished task.
-export const canMoveTask = (from: TaskStatus, to: TaskStatus) =>
-    (from === 'todo' && (to === 'in_progress' || to === 'done')) || (from === 'in_progress' && to === 'done')
+// The employee can only start a task. A task is finished by handing in the work and the
+// administrator accepting it, so nobody marks their own work as done.
+export const canMoveTask = (from: TaskStatus, to: TaskStatus) => from === 'todo' && to === 'in_progress'
+
+// The employee has something to do about it
+export const needsAction = (s: TaskStatus) => s === 'todo' || s === 'in_progress' || s === 'returned'
+
+// Late only while the employee still has to act. Work that is handed in on time is not "overdue" while it waits for review.
+export const isOverdue = (status: TaskStatus, due: Date, today: Date) => needsAction(status) && due < today
+
+// A finished task takes no more work
+export const canSubmitWork = (s: TaskStatus) => s !== 'done'
+
+// Where a task sits in a list: what needs attention first, finished work last
+const RANK: Record<TaskStatus, number> = { returned: 0, todo: 1, in_progress: 2, submitted: 3, done: 4 }
+export const taskRank = (s: TaskStatus) => RANK[s]
+
+export type ReviewDecision = 'accepted' | 'returned' | 'comment'
+export type ReviewOutcome = { ok: true; status: TaskStatus } | { ok: false; message: string }
+
+// What happens to a task when the administrator reviews it
+export function reviewOutcome(decision: ReviewDecision, status: TaskStatus): ReviewOutcome {
+    if (decision === 'comment') return { ok: true, status }
+    if (decision === 'accepted') {
+        return status === 'done' ? { ok: false, message: 'This task was already accepted.' } : { ok: true, status: 'done' }
+    }
+    return status === 'submitted'
+        ? { ok: true, status: 'returned' }
+        : { ok: false, message: 'Only work that was handed in can be returned for changes.' }
+}
 
 // Minutes between clocking in and out. While still clocked in, it counts up to "now".
 export const minutesWorked = (clockIn: Date, clockOut: Date | null, now: Date = new Date()) =>

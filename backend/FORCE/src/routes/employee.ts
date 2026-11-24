@@ -1,13 +1,18 @@
+
+
 import { Router } from 'express'
+import multer from 'multer'
+import path from 'node:path'
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '../prisma'
 import { requireAuth, requireRole } from '../middleware/auth'
 import { HttpError } from '../utils/httpError'
+import { cleanFileName, removeUpload, resolveUpload, saveUpload } from '../services/files'
+import { WORK_MAX_BYTES, detectWorkDocument, workContentType } from '../services/workFiles'
 import { dayToDate, isRealDay, todayInTanzania } from '../services/lecturerRules'
 import { employeeNotices, leaveBalance } from '../services/staff'
-import { LEAVE_TYPES, canMoveTask, checkLeaveRequest, minutesWorked, periodsOverlap } from '../services/staffRules'
-import type { TaskStatus } from '../services/staffRules'
+import { LEAVE_TYPES, canMoveTask, canSubmitWork, checkLeaveRequest, isOverdue, minutesWorked, periodsOverlap, taskRank } from '../services/staffRules'
 
 const router = Router()
 
@@ -30,8 +35,8 @@ router.get('/overview', async (req, res) => {
 
     const [workDay, openTasks, overdue, balance, pendingRequests, notices] = await Promise.all([
         prisma.workDay.findUnique({ where: { userId_date: { userId, date: today } } }),
-        prisma.task.count({ where: { assignedToId: userId, status: { in: ['todo', 'in_progress'] } } }),
-        prisma.task.count({ where: { assignedToId: userId, status: { not: 'done' }, dueDate: { lt: today } } }),
+        prisma.task.count({ where: { assignedToId: userId, status: { in: ['todo', 'in_progress', 'returned'] } } }),
+        prisma.task.count({ where: { assignedToId: userId, status: { in: ['todo', 'in_progress', 'returned'] }, dueDate: { lt: today } } }),
         leaveBalance(userId, Number(todayText.slice(0, 4))),
         prisma.leaveRequest.count({ where: { userId, status: 'pending' } }),
         prisma.announcement.count({ where: { ...employeeNotices, createdAt: { gte: since } } }),
@@ -107,6 +112,8 @@ router.get('/attendance', async (req, res) => {
 })
 
 // ---------- Tasks ----------
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: WORK_MAX_BYTES, files: 1 } })
+
 router.get('/tasks', async (req, res) => {
     const { status } = z.object({ status: z.enum(['open', 'done', 'all']).default('open') }).parse(req.query)
     const today = dayToDate(todayInTanzania())
@@ -114,13 +121,24 @@ router.get('/tasks', async (req, res) => {
     const rows = await prisma.task.findMany({
         where: {
             assignedToId: req.user!.id,
-            ...(status === 'open' && { status: { in: ['todo', 'in_progress'] as TaskStatus[] } }),
+            ...(status === 'open' && { status: { not: 'done' } }), // everything not finished, including work waiting for review
             ...(status === 'done' && { status: 'done' }),
         },
-        orderBy: [{ status: 'asc' }, { dueDate: 'asc' }, { id: 'desc' }],
+        orderBy: [{ dueDate: 'asc' }, { id: 'desc' }],
         take: 100,
-        select: { id: true, title: true, priority: true, dueDate: true, status: true, assignedBy: { select: { fullName: true } } },
+        select: {
+            id: true,
+            title: true,
+            priority: true,
+            dueDate: true,
+            status: true,
+            assignedBy: { select: { fullName: true } },
+            _count: { select: { submissions: true, comments: true } },
+        },
     })
+
+    // what needs the employee's attention first, finished work last
+    rows.sort((a, b) => taskRank(a.status) - taskRank(b.status) || a.dueDate.getTime() - b.dueDate.getTime())
 
     res.json({
         tasks: rows.map((t) => ({
@@ -130,37 +148,130 @@ router.get('/tasks', async (req, res) => {
             dueDate: dayText(t.dueDate),
             status: t.status,
             from: t.assignedBy.fullName,
-            overdue: t.status !== 'done' && t.dueDate < today,
+            overdue: isOverdue(t.status, t.dueDate, today),
+            submissions: t._count.submissions,
+            comments: t._count.comments,
         })),
     })
 })
 
-router.post('/tasks/:id/status', async (req, res) => {
+// One task: the details, the work handed in so far, and everything the administrator has said
+router.get('/tasks/:id', async (req, res) => {
     const id = idSchema.parse(req.params.id)
-    const { status } = z.object({ status: z.enum(['in_progress', 'done']) }).parse(req.body)
-    const me = req.user!
+    const today = dayToDate(todayInTanzania())
 
     const task = await prisma.task.findFirst({
-        where: { id, assignedToId: me.id }, // another person's task looks like it does not exist
+        where: { id, assignedToId: req.user!.id }, // another person's task looks like it does not exist
+        select: {
+            id: true,
+            title: true,
+            priority: true,
+            dueDate: true,
+            status: true,
+            assignedBy: { select: { fullName: true } },
+            submissions: { orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true, fileName: true, note: true, createdAt: true } },
+            comments: {
+                orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+                select: { id: true, body: true, decision: true, createdAt: true, author: { select: { fullName: true } } },
+            },
+        },
+    })
+    if (!task) throw new HttpError(404, 'Task not found.')
+
+    res.json({
+        task: {
+            id: task.id,
+            title: task.title,
+            priority: task.priority,
+            dueDate: dayText(task.dueDate),
+            status: task.status,
+            from: task.assignedBy.fullName,
+            overdue: isOverdue(task.status, task.dueDate, today),
+            canSubmit: canSubmitWork(task.status),
+        },
+        submissions: task.submissions,
+        comments: task.comments.map((c) => ({ id: c.id, body: c.body, decision: c.decision, createdAt: c.createdAt, author: c.author.fullName })),
+    })
+})
+
+// The employee can only START a task here. Finishing it means handing in the work and the administrator accepting it.
+router.post('/tasks/:id/status', async (req, res) => {
+    const id = idSchema.parse(req.params.id)
+    z.object({ status: z.literal('in_progress') }).parse(req.body)
+
+    const task = await prisma.task.findFirst({ where: { id, assignedToId: req.user!.id }, select: { status: true } })
+    if (!task) throw new HttpError(404, 'Task not found.')
+    if (!canMoveTask(task.status, 'in_progress')) throw new HttpError(409, 'This task has already been started.')
+
+    await prisma.task.update({ where: { id }, data: { status: 'in_progress' } })
+    res.json({ status: 'in_progress' })
+})
+
+// Hand in the work: a Word (.docx) or PDF file, with an optional note. It can be handed in again if it is returned.
+router.post('/tasks/:id/submit', upload.single('file'), async (req, res) => {
+    const id = idSchema.parse(req.params.id)
+    const me = req.user!
+    const note = z.string().trim().max(1000, 'The note is too long (1000 characters at most).').default('').parse(req.body?.note ?? '')
+
+    const task = await prisma.task.findFirst({
+        where: { id, assignedToId: me.id },
         select: { title: true, status: true, assignedById: true },
     })
     if (!task) throw new HttpError(404, 'Task not found.')
-    if (!canMoveTask(task.status, status)) throw new HttpError(409, 'This task cannot be moved to that status.')
+    if (!canSubmitWork(task.status)) throw new HttpError(409, 'This task was already accepted, so no more work can be handed in.')
 
-    await prisma.task.update({ where: { id }, data: { status } })
-
-    if (status === 'done') {
-        await prisma.notification.create({
-            data: {
-                userId: task.assignedById,
-                type: 'task_done',
-                title: `${me.fullName} finished a task`,
-                body: task.title,
-                linkUrl: '/admin/staff-work',
-            },
-        })
+    const file = req.file
+    if (!file) throw new HttpError(400, 'Choose your file first.')
+    // the real contents are checked, not the name
+    const doc = detectWorkDocument(file.buffer)
+    if (!doc) {
+        throw new HttpError(400, 'Hand in a Word (.docx) or PDF file. Old .doc files are not accepted: in Word, choose "Save as" and pick .docx.')
     }
-    res.json({ status })
+
+    const stored = await saveUpload('tasks', `task${id}`, file.buffer, doc.ext)
+    const fileName = `${cleanFileName(file.originalname).replace(/\.(docx?|pdf)$/i, '')}.${doc.ext}`
+
+    try {
+        await prisma.$transaction([
+            prisma.taskSubmission.create({ data: { taskId: id, authorId: me.id, filePath: stored, fileName, note: note || null } }),
+            prisma.task.update({ where: { id }, data: { status: 'submitted' } }),
+        ])
+    } catch (err) {
+        await removeUpload(stored) // never keep a file nobody points to
+        throw err
+    }
+
+    await prisma.notification.create({
+        data: {
+            userId: task.assignedById,
+            type: 'task_submitted',
+            title: `${me.fullName} handed in work`,
+            body: task.title,
+            linkUrl: '/admin/staff-work?tab=tasks',
+        },
+    })
+    res.status(201).json({ status: 'submitted' })
+})
+
+// The employee's own files only
+router.get('/tasks/:id/submissions/:sid/file', async (req, res) => {
+    const id = idSchema.parse(req.params.id)
+    const sid = idSchema.parse(req.params.sid)
+
+    const submission = await prisma.taskSubmission.findFirst({
+        where: { id: sid, taskId: id, task: { assignedToId: req.user!.id } },
+        select: { filePath: true, fileName: true },
+    })
+    if (!submission) throw new HttpError(404, 'File not found.')
+
+    const file = resolveUpload(submission.filePath)
+    // always a download, never opened inside the page
+    res.setHeader('Content-Type', workContentType(path.extname(file).slice(1)))
+    res.setHeader('Content-Disposition', `attachment; filename="${cleanFileName(submission.fileName)}"`)
+    res.setHeader('Cache-Control', 'private, no-store')
+    res.sendFile(file, (err) => {
+        if (err && !res.headersSent) res.status(404).json({ message: 'The file is missing on the server.' })
+    })
 })
 
 // ---------- Leave ----------

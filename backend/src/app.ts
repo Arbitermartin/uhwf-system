@@ -40,6 +40,8 @@ import { adminVideosRouter, publicVideosRouter } from './routes/videos'
 import invitationRoutes from './routes/invitations'
 import employeeRoutes from './routes/employee'
 import adminStaffRoutes from './routes/adminStaff'
+import { adminPartnersRouter, publicPartnersRouter } from './routes/partners'
+import learningRoutes from './routes/learning'
 
 
 
@@ -129,6 +131,9 @@ app.use('/api/admin/videos', adminVideosRouter)
 app.use('/api/invitations', invitationRoutes)
 app.use('/api/employee', employeeRoutes)
 app.use('/api/admin/staff', adminStaffRoutes)
+app.use('/api/public/partners', publicPartnersRouter)
+app.use('/api/admin/partners', adminPartnersRouter)
+app.use('/api/learning', learningRoutes)
 
 
 app.use('/api', (_req, res) => {

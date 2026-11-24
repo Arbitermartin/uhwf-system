@@ -73,6 +73,12 @@ enum TaskStatus {
   todo
   in_progress
   done
+  submitted
+  returned
+}
+enum TaskDecision {
+  accepted
+  returned
 }
 
 enum LeaveType {
@@ -152,6 +158,8 @@ model User {
   innovationReviews  InnovationIdea[] @relation("InnovationReviewer")
   ideas        Idea[]
   ideaFeedback IdeaFeedback[]
+  taskSubmissions TaskSubmission[]
+  taskComments    TaskComment[]
   // true for new accounts and after an admin reset: the user must choose their own password
   mustChangePassword Boolean          @default(false)
   passwordChangedAt  DateTime?
@@ -460,6 +468,8 @@ model Task {
   priority     Priority   @default(medium)
   dueDate      DateTime   @db.Date
   status       TaskStatus @default(todo)
+  submissions TaskSubmission[]
+  comments    TaskComment[]
   assignedToId Int
   assignedById Int
   createdAt    DateTime   @default(now())
@@ -888,4 +898,52 @@ model IdeaFeedback {
 
   @@index([ideaId, createdAt])
   @@map("idea_feedback")
+}
+
+model TaskSubmission {
+  id        Int      @id @default(autoincrement())
+  taskId    Int
+  authorId  Int
+  filePath  String
+  fileName  String
+  note      String?
+  createdAt DateTime @default(now())
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([taskId, createdAt])
+  @@map("task_submissions")
+}
+
+model TaskComment {
+  id        Int           @id @default(autoincrement())
+  taskId    Int
+  authorId  Int
+  body      String
+  decision  TaskDecision?
+  createdAt DateTime      @default(now())
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([taskId, createdAt])
+  @@map("task_comments")
+}
+
+model Partner {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  website     String?
+  logoData    Bytes?
+  logoType    String?
+  logoVersion Int      @default(0)
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, sortOrder])
+  @@map("partners")
 }

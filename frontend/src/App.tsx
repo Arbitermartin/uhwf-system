@@ -67,6 +67,8 @@ import {
   EmployeeTasksPage,
 } from './pages/employee/EmployeePages'
 import StaffWorkPage from './pages/admin/StaffWorkPage'
+import PartnersPage from './pages/admin/PartnersPage'
+import LearningPage from './pages/shared/LearningPage'
 
 
 
@@ -156,8 +158,10 @@ function App() {
           <Route path="events" element={<ContentPage tab="events" />} />
           <Route path="password" element={<ChangePassword />} />
           <Route path="support" element={<ReportProblem />} />
+          <Route path="partners" element={<PartnersPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="learning" element={<LearningPage />} />
           <Route path="videos" element={<VideosPage />} />
           {adminPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
@@ -182,6 +186,7 @@ function App() {
             <Route element={<ApprovedOnly />}>
               <Route path="courses" element={<StudentCourses />} />
               <Route path="results" element={<StudentResults />} />
+              <Route path="learning" element={<LearningPage />} />
               <Route path="timetable" element={<StudentTimetable />} />
             </Route>
           </Route>
@@ -201,6 +206,7 @@ function App() {
           <Route path="support" element={<ReportProblem />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="learning" element={<LearningPage />} />
           <Route path="ideas" element={<IdeasPage />} />
           {lecturerPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />
@@ -221,6 +227,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="innovations" element={<InnovationReview />} />
+          <Route path="learning" element={<LearningPage />} />
           <Route path="ideas" element={<IdeasPage />} />
           {ictPlaceholders.map((path) => (
             <Route key={path} path={path} element={<ComingSoon />} />

@@ -1,12 +1,16 @@
+
 import { Router } from 'express'
+import path from 'node:path'
 import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '../prisma'
 import { requireAuth, requireRole } from '../middleware/auth'
 import { HttpError } from '../utils/httpError'
+import { cleanFileName, resolveUpload } from '../services/files'
+import { workContentType } from '../services/workFiles'
 import { dayToDate, isRealDay, todayInTanzania } from '../services/lecturerRules'
 import { annualLeaveDays, leaveBalance } from '../services/staff'
-import { minutesWorked } from '../services/staffRules'
+import { isOverdue, minutesWorked, reviewOutcome } from '../services/staffRules'
 
 const router = Router()
 
@@ -150,7 +154,7 @@ router.patch('/leave/:id', async (req, res) => {
 
 // ============================ Tasks ============================
 const taskList = pageQuery.extend({
-    status: z.enum(['todo', 'in_progress', 'done']).optional(),
+    status: z.enum(['todo', 'in_progress', 'submitted', 'returned', 'done']).optional(),
     employeeId: z.coerce.number().int().positive().optional(),
 })
 
@@ -169,7 +173,7 @@ router.get('/tasks', async (req, res) => {
     const [rows, total, grouped] = await Promise.all([
         prisma.task.findMany({
             where,
-            orderBy: [{ status: 'asc' }, { dueDate: 'asc' }, { id: 'desc' }],
+            orderBy: [{ dueDate: 'asc' }, { id: 'desc' }],
             skip: (q.page - 1) * q.pageSize,
             take: q.pageSize,
             select: {
@@ -180,13 +184,14 @@ router.get('/tasks', async (req, res) => {
                 status: true,
                 assignedTo: { select: { fullName: true } },
                 assignedBy: { select: { fullName: true } },
+                _count: { select: { submissions: true } },
             },
         }),
         prisma.task.count({ where }),
         prisma.task.groupBy({ by: ['status'], _count: { _all: true } }),
     ])
 
-    const counts: Record<string, number> = { todo: 0, in_progress: 0, done: 0 }
+    const counts: Record<string, number> = { todo: 0, in_progress: 0, submitted: 0, returned: 0, done: 0 }
     for (const g of grouped) counts[g.status] = g._count._all
 
     res.json({
@@ -198,7 +203,8 @@ router.get('/tasks', async (req, res) => {
             status: t.status,
             employee: t.assignedTo.fullName,
             assignedBy: t.assignedBy.fullName,
-            overdue: t.status !== 'done' && t.dueDate < today,
+            overdue: isOverdue(t.status, t.dueDate, today),
+            submissions: t._count.submissions,
         })),
         total,
         page: q.page,
@@ -244,6 +250,111 @@ router.delete('/tasks/:id', async (req, res) => {
     const result = await prisma.task.deleteMany({ where: { id: idSchema.parse(req.params.id) } })
     if (result.count === 0) throw new HttpError(404, 'Task not found.')
     res.json({ message: 'Task deleted.' })
+})
+
+// One task: the details, every file handed in, and every comment
+router.get('/tasks/:id', async (req, res) => {
+    const id = idSchema.parse(req.params.id)
+    const today = dayToDate(todayInTanzania())
+
+    const task = await prisma.task.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            title: true,
+            priority: true,
+            dueDate: true,
+            status: true,
+            assignedTo: { select: { fullName: true } },
+            assignedBy: { select: { fullName: true } },
+            submissions: { orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true, fileName: true, note: true, createdAt: true } },
+            comments: {
+                orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+                select: { id: true, body: true, decision: true, createdAt: true, author: { select: { fullName: true } } },
+            },
+        },
+    })
+    if (!task) throw new HttpError(404, 'Task not found.')
+
+    res.json({
+        task: {
+            id: task.id,
+            title: task.title,
+            priority: task.priority,
+            dueDate: dayText(task.dueDate),
+            status: task.status,
+            employee: task.assignedTo.fullName,
+            assignedBy: task.assignedBy.fullName,
+            overdue: isOverdue(task.status, task.dueDate, today),
+        },
+        submissions: task.submissions,
+        comments: task.comments.map((c) => ({ id: c.id, body: c.body, decision: c.decision, createdAt: c.createdAt, author: c.author.fullName })),
+    })
+})
+
+// A file handed in by an employee. Always a download, never opened inside the page.
+router.get('/tasks/:id/submissions/:sid/file', async (req, res) => {
+    const id = idSchema.parse(req.params.id)
+    const sid = idSchema.parse(req.params.sid)
+
+    const submission = await prisma.taskSubmission.findFirst({ where: { id: sid, taskId: id }, select: { filePath: true, fileName: true } })
+    if (!submission) throw new HttpError(404, 'File not found.')
+
+    const file = resolveUpload(submission.filePath)
+    res.setHeader('Content-Type', workContentType(path.extname(file).slice(1)))
+    res.setHeader('Content-Disposition', `attachment; filename="${cleanFileName(submission.fileName)}"`)
+    res.setHeader('Cache-Control', 'private, no-store')
+    res.sendFile(file, (err) => {
+        if (err && !res.headersSent) res.status(404).json({ message: 'The file is missing on the server.' })
+    })
+})
+
+// The administrator answers: accept the work, return it with a comment, or just comment.
+const reviewSchema = z.object({
+    decision: z.enum(['accepted', 'returned', 'comment']),
+    comment: z.string().trim().max(1000, 'The comment is too long.').default(''),
+})
+
+router.post('/tasks/:id/review', async (req, res) => {
+    const id = idSchema.parse(req.params.id)
+    const me = req.user!
+    const { decision, comment } = reviewSchema.parse(req.body)
+
+    if (decision === 'returned' && comment.length < 5) {
+        throw new HttpError(400, 'Tell the employee what to change (at least 5 characters).')
+    }
+    if (decision === 'comment' && comment.length < 3) throw new HttpError(400, 'Write a comment first.')
+
+    const task = await prisma.task.findUnique({ where: { id }, select: { title: true, status: true, assignedToId: true } })
+    if (!task) throw new HttpError(404, 'Task not found.')
+
+    const outcome = reviewOutcome(decision, task.status)
+    if (!outcome.ok) throw new HttpError(409, outcome.message)
+
+    await prisma.$transaction([
+        ...(outcome.status !== task.status ? [prisma.task.update({ where: { id }, data: { status: outcome.status } })] : []),
+        ...(comment
+            ? [prisma.taskComment.create({ data: { taskId: id, authorId: me.id, body: comment, decision: decision === 'comment' ? null : decision } })]
+            : []),
+    ])
+
+    const titles = {
+        accepted: 'Your task was accepted',
+        returned: 'Your task was returned for changes',
+        comment: 'New comment on your task',
+    } as const
+    await prisma.notification.create({
+        data: {
+            userId: task.assignedToId,
+            type: 'task_review',
+            title: titles[decision],
+            body: comment ? `${task.title}: ${comment.length > 100 ? `${comment.slice(0, 100)}...` : comment}` : task.title,
+            linkUrl: '/employee/tasks',
+        },
+    })
+    await prisma.activityLog.create({ data: { userId: me.id, level: 'info', message: `Task #${id} reviewed: ${decision}` } })
+
+    res.json({ status: outcome.status })
 })
 
 // ============================ Attendance ============================

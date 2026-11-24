@@ -31,7 +31,7 @@ import {
     FaHome,
     FaHeart,
     FaTicketAlt, FaCloudUploadAlt, FaShieldAlt, FaServer, FaDatabase, FaTools,
-    FaTasks, FaClock, FaCalendarCheck, FaLifeRing,
+    FaTasks, FaClock, FaCalendarCheck, FaLifeRing, FaHandshake, FaBookOpen,
 } from 'react-icons/fa'
 import { ApplicationContext } from '../context/application-context'
 import logo from '../assets/uhwf-logo.webp'
@@ -48,6 +48,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Users', to: '/admin/users', icon: FaUsers },
         { label: 'Students', to: '/admin/students', icon: FaUserGraduate },
         { label: 'Lecturers', to: '/admin/lecturers', icon: FaChalkboardTeacher },
+        { label: 'Partners', to: '/admin/partners', icon: FaHandshake },
         { label: 'Employees', to: '/admin/employees', icon: FaBriefcase },
         { label: 'Courses', to: '/admin/courses', icon: FaBook },
         { label: 'Careers', to: '/admin/careers', icon: FaBriefcase },
@@ -59,7 +60,9 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Applications', to: '/admin/applications', icon: FaFileAlt },
         { label: 'Staff work', to: '/admin/staff-work', icon: FaBriefcase },
         { label: 'Messages', to: '/admin/messages', icon: FaEnvelope },
+        { label: 'Knowledge base', to: '/admin/learning', icon: FaBookOpen },
         { label: 'Settings', to: '/admin/settings', icon: FaCog },
+
     ],
     student: [
         { label: 'Dashboard', to: '/student', icon: FaTachometerAlt, end: true },
@@ -70,6 +73,8 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Timetable', to: '/student/timetable', icon: FaCalendarAlt, needsApproval: true },
         { label: 'Innovation', to: '/student/ideas', icon: FaLightbulb },
         { label: 'Results', to: '/student/results', icon: FaChartBar, needsApproval: true },
+        // student
+        { label: 'My learning', to: '/student/learning', icon: FaBookOpen, needsApproval: true },
     ],
     lecturer: [
         { label: 'Dashboard', to: '/lecturer', icon: FaTachometerAlt, end: true },
@@ -80,7 +85,9 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Announcements', to: '/lecturer/announcements', icon: FaBullhorn },
         { label: 'Innovation', to: '/lecturer/ideas', icon: FaLightbulb },
         { label: 'Messages', to: '/lecturer/messages', icon: FaEnvelope },
+        { label: 'Knowledge base', to: '/lecturer/learning', icon: FaBookOpen },
         { label: 'Timetable', to: '/lecturer/timetable', icon: FaCalendarAlt },
+
     ],
     employee: [
         { label: 'Dashboard', to: '/employee', icon: FaTachometerAlt, end: true },
@@ -92,6 +99,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Visitor ideas', to: '/employee/innovations', icon: FaLightbulb },
         { label: 'Messages', to: '/employee/messages', icon: FaEnvelope },
         { label: 'Report a problem', to: '/employee/support', icon: FaLifeRing },
+        { label: 'Knowledge base', to: '/employee/learning', icon: FaBookOpen },
     ],
     ict: [
         { label: 'Dashboard', to: '/ict', icon: FaTachometerAlt, end: true },
@@ -106,6 +114,7 @@ const navByRole: Record<Role, NavItem[]> = {
         { label: 'Database', to: '/ict/database', icon: FaDatabase },
         { label: 'Maintenance', to: '/ict/maintenance', icon: FaTools },
         { label: 'Settings', to: '/ict/settings', icon: FaCog },
+        { label: 'Knowledge base', to: '/ict/learning', icon: FaBookOpen },
     ],
     member: [
         { label: 'Dashboard', to: '/member', icon: FaHome, end: true },

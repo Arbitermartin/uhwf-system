@@ -28,7 +28,7 @@ export const en = {
     },
     home: {
         eyebrow: 'Universal Human-Wildlife Foundation',
-        heroTitle: 'We Are UHWF',
+        heroTitle: 'We Are UHWF  ',
         heroText:
             "United for a sustainable future — dedicated to protecting Tanzania's land, wildlife, and communities through responsible action and local empowerment.",
         register: 'Register Now',
@@ -66,6 +66,15 @@ export const en = {
         ctaTitle: 'Join Our Mission',
         ctaText: "Be part of the effort to protect Tanzania's land, wildlife and communities.",
         loadError: 'Could not load the latest news and events.',
+
+        partnersTitle: 'Our Partners',
+        partnersText: 'The organisations and communities we work with.',
+        visitSite: 'Visit website',
+        slidePrev: 'Previous partner',
+        slideNext: 'Next partner',
+        slidePause: 'Pause the slideshow',
+        slidePlay: 'Play the slideshow',
+        slideGo: 'Show partner {{n}} of {{total}}',
     },
     about: {
         eyebrow: 'Universal Human-Wildlife Foundation',
@@ -149,7 +158,10 @@ export const en = {
         followTitle: 'Follow Us',
         followText: 'Stay up to date with our work and events.',
         mapTitle: 'UHWF location map',
+
+
     },
 }
+
 
 export type Translations = typeof en

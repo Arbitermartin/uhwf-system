@@ -160,6 +160,7 @@ model User {
   ideaFeedback IdeaFeedback[]
   taskSubmissions TaskSubmission[]
   taskComments    TaskComment[]
+    learningNotes LearningNote[]
   // true for new accounts and after an admin reset: the user must choose their own password
   mustChangePassword Boolean          @default(false)
   passwordChangedAt  DateTime?
@@ -287,6 +288,7 @@ model Course {
   conversations      Conversation[]
   announcements      Announcement[]
   timetableSlots     TimetableSlot[]
+  learningNotes      LearningNote[]
 
   @@index([departmentId])
   @@index([lecturerId])
@@ -436,6 +438,9 @@ model Submission {
   assignmentId Int
   studentId    Int
   fileUrl      String?
+  fileName   String?
+  note       String?
+  handedInAt DateTime?
   submittedAt  DateTime  @default(now())
   score        Float?
   gradedAt     DateTime?
@@ -929,4 +934,40 @@ model TaskComment {
 
   @@index([taskId, createdAt])
   @@map("task_comments")
+}
+
+model Partner {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  website     String?
+  logoData    Bytes?
+  logoType    String?
+  logoVersion Int      @default(0)
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, sortOrder])
+  @@map("partners")
+}
+
+model LearningNote {
+  id             Int      @id @default(autoincrement())
+  courseId       Int?
+  authorId       Int
+  title          String
+  body           String
+  attachmentPath String?
+  attachmentName String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  course Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  author User    @relation(fields: [authorId], references: [id])
+
+  @@index([courseId, createdAt])
+  @@index([authorId])
+  @@map("learning_notes")
 }

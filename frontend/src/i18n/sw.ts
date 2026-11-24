@@ -68,6 +68,15 @@ export const sw: Translations = {
         ctaTitle: 'Jiunge na Dhamira Yetu',
         ctaText: 'Shiriki katika juhudi za kulinda ardhi, wanyamapori na jamii za Tanzania.',
         loadError: 'Imeshindwa kupakia habari na matukio ya karibuni.',
+
+        partnersTitle: 'Washirika Wetu',
+        partnersText: 'Mashirika na jamii tunazofanya nazo kazi.',
+        visitSite: 'Tembelea tovuti',
+        slidePrev: 'Mshirika aliyetangulia',
+        slideNext: 'Mshirika anayefuata',
+        slidePause: 'Simamisha onyesho',
+        slidePlay: 'Endelea na onyesho',
+        slideGo: 'Onyesha mshirika {{n}} kati ya {{total}}',
     },
     about: {
         eyebrow: 'Universal Human-Wildlife Foundation',
@@ -151,5 +160,7 @@ export const sw: Translations = {
         followTitle: 'Tufuate',
         followText: 'Pata habari za kazi na matukio yetu.',
         mapTitle: 'Ramani ya eneo la UHWF',
+
+
     },
 }
